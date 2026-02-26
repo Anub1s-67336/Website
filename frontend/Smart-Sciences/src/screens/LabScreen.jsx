@@ -4,7 +4,7 @@ import { MOLS, ACOL, ATOM_NAMES } from '../data/constants.js'
 import { snd }        from '../utils/sound.js'
 
 export function LabScreen({ t, lang, setMsg, setHappy, addPts }) {
-  const { addXP, addMedal, medals } = useAuth()
+  const { addXP, addMedal, medals, incrementQuestProgress } = useAuth()
 
   const [molKey,     setMolKey]     = useState('water')
   const [zone,       setZone]       = useState([])
@@ -36,6 +36,7 @@ export function LabScreen({ t, lang, setMsg, setHappy, addPts }) {
     setMsg(t.prof.win); setHappy(true)
     addXP(100); snd('win')
     addMedal('lab1')
+    incrementQuestProgress('dq_lab')
     const nb = molsBuilt + 1
     setMolsBuilt(nb)
     if (nb >= 3) addMedal('lab2')

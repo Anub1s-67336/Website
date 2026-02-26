@@ -4,7 +4,7 @@ import { ORGAN_POS } from '../data/constants.js'
 import { snd }       from '../utils/sound.js'
 
 export function BodyScreen({ t, setMsg, setHappy, addPts }) {
-  const { addMedal, medals } = useAuth()
+  const { addMedal, medals, incrementQuestProgress } = useAuth()
   const [sel,      setSel]      = useState(null)
   const [speaking, setSpeaking] = useState(false)
 
@@ -19,6 +19,7 @@ export function BodyScreen({ t, setMsg, setHappy, addPts }) {
     setMsg(`${t.organs[id].name}: ${t.organs[id].info}`)
     setTimeout(() => setSpeaking(false), 3500)
     if (!medals.includes('body1')) addMedal('body1')
+    incrementQuestProgress('dq_visit')
   }
 
   return (

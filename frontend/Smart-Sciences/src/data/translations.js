@@ -1,12 +1,11 @@
 /**
  * Smart-Sciences translations
- * RU = Russian
- * UZ = Uzbek Latin (no Cyrillic)
+ * RU = Russian  |  UZ = Uzbek Latin
  */
 export const T = {
   RU: {
     appSub: 'Химия внутри нас 🧬',
-    nav: ['Главная', 'Тело', 'Лаборатория', 'Достижения', 'Карьера'],
+    nav: ['Главная', 'Тело', 'Лаборатория', '⚡ Электроны', 'Достижения', 'Карьера'],
     xpLabel: 'очков', levelLabel: 'Уровень', juniorChem: 'Юный химик',
     toNextLevel: 'до след. уровня', topicsTitle: '🔬 Темы для изучения',
     openLab: '🧪 Открыть Лабораторию', contact: '📬 Связаться с разработчиками',
@@ -16,11 +15,21 @@ export const T = {
     comboText: '🔥 COMBO x', xpBonus: '+15 XP за каждый',
     winTitle: 'Молекула создана!', winSub: 'Источник энергии для клеток твоего тела',
     bodyTitle: '🫀 Карта Тела', bodySub: 'Нажми на орган — узнай его химию',
-    medalTitle: '🏆 Мои Достижения', medalSub: 'Выполняй задания — получай медали!',
+    medalTitle: '🏆 Достижения', medalSub: 'Ежедневные задания и все медали',
     roadmapTitle: '🗺 Путь к Магистру Химии',
     roadmapSub: 'Образовательная траектория Smart-Sciences',
-    medalNames: ['Начинающий алхимик','Мастер молекул','Гений Smart-Sciences','Покоритель лаб','Знаток тела'],
-    medalDescs: ['Первый шаг в химию','Собрал 3 молекулы','Изучил все темы','Прошёл все опыты','Изучил все органы'],
+    medalNames: [
+      'Начинающий алхимик', 'Мастер молекул', 'Гений Smart-Sciences',
+      'Покоритель лаб', 'Знаток тела',
+      'Первые шаги', 'Электронный охотник', 'Мастер заданий',
+      'Мастер АТФ', 'Знаток костей', 'Нейрохимик',
+    ],
+    medalDescs: [
+      'Первый шаг в химию', 'Собрал 3 молекулы', 'Изучил все темы',
+      'Прошёл все опыты', 'Изучил все органы',
+      'Прошёл обучение с Дроном', 'Поймал 20 электронов за сессию', 'Выполнил ежедневное задание «Лаборатория»',
+      'Завершил урок «Почему мы двигаемся?»', 'Завершил урок «Крепкие кости»', 'Завершил урок «Химия эмоций»',
+    ],
     contactTitle: 'Связаться с командой',
     contactSub: 'Открыты для партнёрства и инвестиций',
     closeBtn: 'Закрыть', selectMol: 'Выбери молекулу:',
@@ -32,14 +41,16 @@ export const T = {
       { title: 'Химия эмоций',           sub: 'Дофамин и серотонин',  tag: 'Нейрохимия' },
     ],
     prof: {
-      home:    'Привет! Я Профессор Атом! 🧪 Готов исследовать химию внутри тебя?',
-      lab:     'Собери атомы, чтобы создать молекулу! Нажимай или перетаскивай 🔬',
-      win:     '🎉 Молекула собрана! Отличная работа, юный химик!',
-      body:    'Нажми на любой орган — расскажу о реакциях внутри! ✨',
-      medals:  'Каждая медаль — шаг к знаниям! Собери их все! 🏆',
-      roadmap: 'Вот твой путь от новичка до Магистра Химии! 🌟',
-      wrong:   'Не то! Посмотри внимательно на формулу 🤔',
-      combo:   'Отличная серия! Продолжай в том же духе! 🔥',
+      home:         'Привет! Я Профессор Атом! 🧪 Готов исследовать химию внутри тебя?',
+      lab:          'Собери атомы, чтобы создать молекулу! Нажимай или перетаскивай 🔬',
+      win:          '🎉 Молекула собрана! Отличная работа, юный химик!',
+      body:         'Нажми на любой орган — расскажу о реакциях внутри! ✨',
+      medals:       'Выполняй ежедневные задания и собирай медали! 🏆',
+      roadmap:      'Вот твой путь от новичка до Магистра Химии! 🌟',
+      wrong:        'Не то! Посмотри внимательно на формулу 🤔',
+      combo:        'Отличная серия! Продолжай в том же духе! 🔥',
+      electron:     'Лови синие электроны! ⚡ Красные протоны — опасны! Удачи!',
+      tutorial:     'Добро пожаловать! Давай я покажу тебе Smart-Sciences! 🤖',
     },
     organs: {
       brain:   { name: 'Мозг',    info: 'Нейроны работают на глюкозе. Мозг потребляет 20% всей энергии тела!', snd: 'think'   },
@@ -56,7 +67,6 @@ export const T = {
       { name: 'Биохимик',       games: ['ДНК и РНК',        'Ферменты'],        xp: '1000–2000 XP'},
       { name: 'Магистр химии',  games: ['Финальный экзамен','Создай лекарство'],xp: '2000+ XP'    },
     ],
-    // Auth
     auth: {
       loginTitle:    'Добро пожаловать',
       loginSub:      'Войди в свой аккаунт',
@@ -76,11 +86,56 @@ export const T = {
       usernamePlaceholder: 'юный_химик',
       demoHint:      'Демо: demo@ss.uz / demo1234',
     },
+    // ── Tutorial ─────────────────────────────────────────────
+    tutorial: {
+      title:  '🤖 Добро пожаловать!',
+      skip:   'Пропустить',
+      next:   'Далее →',
+      finish: '🚀 Начать!',
+      steps: [
+        'Привет, юный химик! Я — Дрон-Помощник! 🤖 Проведу тебя по Smart-Sciences!',
+        'Это твой ОПЫТ (XP) ⬆️ Чем больше задач решаешь — тем выше уровень! Каждый следующий уровень требует на 20% больше XP.',
+        '🧪 Лаборатория — собирай молекулы из атомов и зарабатывай XP за каждую!',
+        '⚡ «Охота за электронами» — новая мини-игра! Лови синие электроны, избегай розовых протонов!',
+        '🏆 Достижения — ежедневные задания с редкими медалями. Обновляются каждый день!',
+        'Всё готово! Формула успеха: Задания → XP → Уровни → Медали. Удачи, химик! 🚀',
+      ],
+    },
+    // ── Electron game ────────────────────────────────────────
+    electronGame: {
+      title:   '⚡ Охота за Электронами',
+      sub:     'Лови синие электроны — не трогай розовые протоны!',
+      start:   '▶ Начать игру',
+      restart: '🔄 Сначала',
+      gameOver:'Игра окончена!',
+      score:   'Счёт',
+      lives:   'Жизни',
+      level:   'Уровень',
+      xpEarned:'XP заработано',
+      tip:     'Синий ● электрон = +10 очков   Розовый ● протон = −❤️',
+    },
+    // ── Achievements screen ──────────────────────────────────
+    achievements: {
+      title:       '🏆 Достижения',
+      sub:         'Ежедневные задания и коллекция медалей',
+      dailyTitle:  '📅 Ежедневные задания',
+      dailyReset:  'Обновляется каждый день в полночь',
+      allTitle:    '🎖 Коллекция медалей',
+      completed:   '✓ Выполнено!',
+      reward:      'Награда',
+      locked:      '🔒 Не получена',
+      questNames:  ['Молекулярный марафон', 'Охотник за электронами', 'Исследователь тела'],
+      questDescs:  [
+        'Собери 3 молекулы в лаборатории',
+        'Поймай 20 электронов в игре',
+        'Исследуй 4 органа на карте тела',
+      ],
+    },
   },
 
   UZ: {
     appSub: 'Ichimizda kimyo 🧬',
-    nav: ['Bosh sahifa', 'Tana', 'Laboratoriya', 'Yutuqlar', 'Karyera'],
+    nav: ['Bosh sahifa', 'Tana', 'Laboratoriya', '⚡ Elektronlar', 'Yutuqlar', 'Karyera'],
     xpLabel: 'ball', levelLabel: 'Daraja', juniorChem: 'Yosh kimyogar',
     toNextLevel: 'keyingi darajagacha', topicsTitle: '🔬 O\'rganish mavzulari',
     openLab: '🧪 Laboratoriyani ochish', contact: '📬 Ishlab chiquvchilar bilan bog\'laning',
@@ -90,11 +145,21 @@ export const T = {
     comboText: '🔥 COMBO x', xpBonus: '+15 XP har biri uchun',
     winTitle: 'Molekula yaratildi!', winSub: 'Tana hujayralari uchun energiya manbai',
     bodyTitle: '🫀 Tana Xaritasi', bodySub: 'Organni bosing — kimyosini bilib oling',
-    medalTitle: '🏆 Mening Yutuqlarim', medalSub: 'Topshiriqlarni bajaring — medallar oling!',
+    medalTitle: '🏆 Yutuqlar', medalSub: 'Kunlik topshiriqlar va barcha medallar',
     roadmapTitle: '🗺 Kimyo Magistriga yo\'l',
     roadmapSub: 'Smart-Sciences ta\'lim trayektoriyasi',
-    medalNames: ['Boshlang\'ich alkimyogar','Molekula ustasi','Smart-Sciences dahosi','Laboratoriya g\'olibi','Tana bilimdoni'],
-    medalDescs: ['Kimyoga birinchi qadam','3 ta molekula yig\'ildi','Barcha mavzular o\'tildi','Barcha tajribalar bajarildi','Barcha organlar o\'rganildi'],
+    medalNames: [
+      'Boshlang\'ich alkimyogar', 'Molekula ustasi', 'Smart-Sciences dahosi',
+      'Laboratoriya g\'olibi', 'Tana bilimdoni',
+      'Birinchi qadamlar', 'Elektron ovchisi', 'Topshiriq ustasi',
+      'ATF ustasi', 'Suyak bilimdoni', 'Neyrokimyogar',
+    ],
+    medalDescs: [
+      'Kimyoga birinchi qadam', '3 ta molekula yig\'ildi', 'Barcha mavzular o\'tildi',
+      'Barcha tajribalar bajarildi', 'Barcha organlar o\'rganildi',
+      'Dron bilan o\'qitish o\'tildi', 'Bir sessiyada 20 ta elektron ushlandi', 'Kunlik «Laboratoriya» topshirig\'i bajarildi',
+      '«Nima uchun harakatlanamiz?» darsi tugatildi', '«Mustahkam suyaklar» darsi tugatildi', '«Hissiyotlar kimyosi» darsi tugatildi',
+    ],
     contactTitle: 'Jamoa bilan bog\'laning',
     contactSub: 'Hamkorlik va investitsiyalarga ochiqmiz',
     closeBtn: 'Yopish', selectMol: 'Molekulani tanlang:',
@@ -106,14 +171,16 @@ export const T = {
       { title: 'Hissiyotlar kimyosi',          sub: 'Dopamin va serotonin',    tag: 'Neyrokimyo' },
     ],
     prof: {
-      home:    'Salom! Men Professor Atom! 🧪 Ichingizda kimyoni o\'rganishga tayyormisiz?',
-      lab:     'Molekula yaratish uchun atomlarni yig\'ing! 🔬',
-      win:     '🎉 Molekula yaratildi! Ajoyib ish, yosh kimyogar!',
-      body:    'Istalgan organni bosing — ichidagi reaktsiyalar haqida aytaman! ✨',
-      medals:  'Har bir medal — bilim sari qadam! Hammasini yig\'ing! 🏆',
-      roadmap: 'Bu sening yangi boshlovchidan Kimyo Magistriga yo\'ling! 🌟',
-      wrong:   'Noto\'g\'ri! Formulaga diqqat bilan qarang 🤔',
-      combo:   'Ajoyib seriya! Shunday davom eting! 🔥',
+      home:         'Salom! Men Professor Atom! 🧪 Ichingizda kimyoni o\'rganishga tayyormisiz?',
+      lab:          'Molekula yaratish uchun atomlarni yig\'ing! 🔬',
+      win:          '🎉 Molekula yaratildi! Ajoyib ish, yosh kimyogar!',
+      body:         'Istalgan organni bosing — ichidagi reaktsiyalar haqida aytaman! ✨',
+      medals:       'Kunlik topshiriqlarni bajaring va medallar yig\'ing! 🏆',
+      roadmap:      'Bu sening yangi boshlovchidan Kimyo Magistriga yo\'ling! 🌟',
+      wrong:        'Noto\'g\'ri! Formulaga diqqat bilan qarang 🤔',
+      combo:        'Ajoyib seriya! Shunday davom eting! 🔥',
+      electron:     'Ko\'k elektronlarni ushlang! ⚡ Pushti protonlar xavfli! Omad!',
+      tutorial:     'Xush kelibsiz! Keling, Smart-Sciencesni birga ko\'raylik! 🤖',
     },
     organs: {
       brain:   { name: 'Miya',      info: 'Neyronlar glyukozada ishlaydi. Miya tana energiyasining 20% ni sarflaydi!', snd: 'think'   },
@@ -130,7 +197,6 @@ export const T = {
       { name: 'Biokimyogar',      games: ['DNK va RNK',        'Fermentlar'],            xp: '1000–2000 XP'},
       { name: 'Kimyo Magistri',   games: ['Yakuniy imtihon',   'Dori yaratish'],         xp: '2000+ XP'    },
     ],
-    // Auth
     auth: {
       loginTitle:    'Xush kelibsiz',
       loginSub:      'Hisobingizga kiring',
@@ -149,6 +215,51 @@ export const T = {
       passwordPlaceholder: '••••••••',
       usernamePlaceholder: 'yosh_kimyogar',
       demoHint:      'Demo: demo@ss.uz / demo1234',
+    },
+    // ── Tutorial ─────────────────────────────────────────────
+    tutorial: {
+      title:  '🤖 Xush kelibsiz!',
+      skip:   'O\'tkazish',
+      next:   'Keyingi →',
+      finish: '🚀 Boshlash!',
+      steps: [
+        'Salom, yosh kimyogar! Men Dron-Yordamchi! 🤖 Smart-Sciences bo\'ylab yo\'lboshchilik qilaman!',
+        'Bu sizning TAJRIBA (XP) ⬆️ Qancha ko\'p vazifa bajarsangiz — daraja shuncha yuqori! Har keyingi daraja 20% ko\'proq XP talab qiladi.',
+        '🧪 Laboratoriya — atomlardan molekulalar yig\'ing va har biri uchun XP oling!',
+        '⚡ «Elektron Ovi» — yangi mini-o\'yin! Ko\'k elektronlarni ushlang, pushti protonlardan saqlaning!',
+        '🏆 Yutuqlar — kunlik topshiriqlar va kamyob medallar. Har kuni yangilanadi!',
+        'Hammasi tayyor! Muvaffaqiyat formulasi: Topshiriqlar → XP → Darajalar → Medallar. Omad! 🚀',
+      ],
+    },
+    // ── Electron game ────────────────────────────────────────
+    electronGame: {
+      title:   '⚡ Elektron Ovi',
+      sub:     'Ko\'k elektronlarni ushlang — pushti protonlarga tegmang!',
+      start:   '▶ O\'yinni boshlash',
+      restart: '🔄 Qayta boshlash',
+      gameOver:'O\'yin tugadi!',
+      score:   'Ball',
+      lives:   'Jonlar',
+      level:   'Daraja',
+      xpEarned:'XP qo\'lga kiritildi',
+      tip:     'Ko\'k ● elektron = +10 ball   Pushti ● proton = −❤️',
+    },
+    // ── Achievements screen ──────────────────────────────────
+    achievements: {
+      title:       '🏆 Yutuqlar',
+      sub:         'Kunlik topshiriqlar va medal kolleksiyasi',
+      dailyTitle:  '📅 Kunlik topshiriqlar',
+      dailyReset:  'Har kuni yarim kechada yangilanadi',
+      allTitle:    '🎖 Medal kolleksiyasi',
+      completed:   '✓ Bajarildi!',
+      reward:      'Mukofot',
+      locked:      '🔒 Olinmagan',
+      questNames:  ['Molekulyar marafon', 'Elektron ovchisi', 'Tana tadqiqotchisi'],
+      questDescs:  [
+        'Laboratoriyada 3 ta molekula yig\'ing',
+        'O\'yinda 20 ta elektron ushlang',
+        'Tana xaritasida 4 ta organni o\'rganing',
+      ],
     },
   },
 }

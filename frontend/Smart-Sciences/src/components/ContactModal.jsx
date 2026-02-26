@@ -9,7 +9,7 @@ export function ContactModal({ t, onClose }) {
     { icon: '📧', label: 'Email',    value: 'hello@smart-sciences.uz' },
     { icon: '📱', label: 'Telegram', value: '@smart_sciences_uz'       },
     { icon: '🌐', label: 'Website',  value: 'smart-sciences.uz'        },
-    { icon: '📍', label: '',         value: "Toshkent, O'zbekiston"     },
+    { icon: '📍', label: '',         value: "Yangiyer, O'zbekiston"    },
   ]
 
   return (

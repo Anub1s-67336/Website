@@ -3,7 +3,7 @@ import { TOPIC_META }   from '../data/constants.js'
 import { xpToLevel, xpLevelPercent, xpToNextLevel } from '../data/constants.js'
 import { snd }          from '../utils/sound.js'
 
-export function HomeScreen({ t, setScreen, openContact }) {
+export function HomeScreen({ t, setScreen, setLesson, openContact }) {
   const { xp, user } = useAuth()
   const level = xpToLevel(xp)
   const pct   = xpLevelPercent(xp)
@@ -38,7 +38,7 @@ export function HomeScreen({ t, setScreen, openContact }) {
         {t.topics.map((tp, i) => {
           const m = TOPIC_META[i]
           return (
-            <div key={i} onClick={() => { snd('click'); setScreen('roadmap') }} style={{
+            <div key={i} onClick={() => { snd('click'); setLesson(i); setScreen('lesson') }} style={{
               background: m.grad, borderRadius: 18, padding: 18, cursor: 'pointer',
               position: 'relative', overflow: 'hidden',
               transition: 'transform .25s, box-shadow .25s',

@@ -1,20 +1,56 @@
-/** XP thresholds per level */
-export const XP_PER_LEVEL = 200
+// ── Exponential XP progression ─────────────────────────────────
+// Each level requires 20% more XP than the previous one.
+// Level 1 = 200 XP, Level 2 = 240 XP, Level 3 = 288 XP …
 
-/** Compute level number from XP */
+const BASE_XP = 200
+const GROWTH  = 1.2
+
+/** XP required to COMPLETE level n (1-indexed) */
+export function xpForLevel(n) {
+  return Math.floor(BASE_XP * Math.pow(GROWTH, n - 1))
+}
+
+/** Total cumulative XP needed to REACH level n (i.e. to start it) */
+export function totalXpToReach(n) {
+  if (n <= 1) return 0
+  let total = 0
+  for (let i = 1; i < n; i++) total += xpForLevel(i)
+  return total
+}
+
+/** Current level given total accumulated XP */
 export function xpToLevel(xp) {
-  return Math.floor(xp / XP_PER_LEVEL) + 1
+  let level = 1
+  while (totalXpToReach(level + 1) <= xp) level++
+  return level
 }
 
-/** XP remaining until next level */
-export function xpToNextLevel(xp) {
-  return XP_PER_LEVEL - (xp % XP_PER_LEVEL)
+/** Progress info within the current level */
+export function xpLevelProgress(xp) {
+  const level    = xpToLevel(xp)
+  const startXp  = totalXpToReach(level)
+  const required = xpForLevel(level)
+  const progress = xp - startXp
+  return {
+    level,
+    progress,
+    required,
+    percent: Math.min(100, (progress / required) * 100),
+    toNext:  required - progress,
+  }
 }
 
-/** XP progress within current level as 0–100 percentage */
-export function xpLevelPercent(xp) {
-  return ((xp % XP_PER_LEVEL) / XP_PER_LEVEL) * 100
-}
+// Kept for backwards-compat with any code that still uses these names
+export const XP_PER_LEVEL     = 200
+export const xpToNextLevel    = (xp) => xpLevelProgress(xp).toNext
+export const xpLevelPercent   = (xp) => xpLevelProgress(xp).percent
+
+// ── Daily quest definitions ─────────────────────────────────────
+export const DAILY_QUESTS = [
+  { id: 'dq_lab',      icon: '🧪', target: 3,  xpReward: 50, medalReward: 'daily_lab'  },
+  { id: 'dq_electron', icon: '⚡', target: 20, xpReward: 30, medalReward: null          },
+  { id: 'dq_visit',    icon: '🫀', target: 4,  xpReward: 20, medalReward: null          },
+]
 
 // ── Molecules available in the Lab ─────────────────────────────
 export const MOLS = {
@@ -73,11 +109,17 @@ export const ORGAN_POS = {
 
 // ── Medal definitions ───────────────────────────────────────────
 export const MEDAL_DEF = [
-  { id: 'first',  icon: '⚗️', col: '#fbbf24' },
-  { id: 'lab1',   icon: '🧪', col: '#4fc3f7' },
-  { id: 'lab2',   icon: '🧬', col: '#a78bfa' },
-  { id: 'body1',  icon: '🫀', col: '#f472b6' },
-  { id: 'genius', icon: '🏆', col: '#fbbf24' },
+  { id: 'first',           icon: '⚗️', col: '#fbbf24' },
+  { id: 'lab1',            icon: '🧪', col: '#4fc3f7' },
+  { id: 'lab2',            icon: '🧬', col: '#a78bfa' },
+  { id: 'body1',           icon: '🫀', col: '#f472b6' },
+  { id: 'genius',          icon: '🏆', col: '#fbbf24' },
+  { id: 'tutorial_done',   icon: '🤖', col: '#818cf8' },
+  { id: 'electron_hunter', icon: '⚡', col: '#22d3ee' },
+  { id: 'daily_lab',       icon: '📅', col: '#4ade80' },
+  { id: 'lesson_atp',      icon: '⚡', col: '#67e8f9' },
+  { id: 'lesson_calcium',  icon: '🦴', col: '#c4b5fd' },
+  { id: 'lesson_dopamine', icon: '🧠', col: '#f9a8d4' },
 ]
 
 // ── Roadmap level icons / colours ──────────────────────────────
@@ -86,9 +128,10 @@ export const LV_COLS  = ['#22d3ee', '#a78bfa', '#f472b6', '#4ade80', '#fbbf24']
 
 // ── Navigation items ────────────────────────────────────────────
 export const NAV = [
-  { id: 'home',    icon: '🏠' },
-  { id: 'body',    icon: '🫀' },
-  { id: 'lab',     icon: '🧪' },
-  { id: 'medals',  icon: '🏆' },
-  { id: 'roadmap', icon: '🗺' },
+  { id: 'home',     icon: '🏠' },
+  { id: 'body',     icon: '🫀' },
+  { id: 'lab',      icon: '🧪' },
+  { id: 'electron', icon: '⚡' },
+  { id: 'medals',   icon: '🏆' },
+  { id: 'roadmap',  icon: '🗺' },
 ]
