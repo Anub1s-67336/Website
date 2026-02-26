@@ -5,6 +5,11 @@ from fastapi.security import HTTPBearer
 from starlette.requests import Request
 from sqlalchemy.orm import Session
 from datetime import timedelta
+import traceback
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Import database and models
 from database import engine, get_db, Base
@@ -18,8 +23,13 @@ import crud
 from schemas import (
     UserRegister, UserLogin, UserResponse, TokenResponse,
     LessonCreate, LessonResponse,
-    UserProgressCreate, UserProgressResponse, LessonProgressResponse
+    UserProgressCreate, UserProgressResponse, LessonProgressResponse,
+    UserProgressUpdateRequest,
 )
+
+# Auto-fix outdated SQLite schema (drops & recreates DB if columns are missing)
+from database import verify_schema
+verify_schema()
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,12 +38,13 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Learning Platform API", version="1.0.0")
 
 # ==================== CORS Configuration ====================
-# Allow requests from configured frontend origins
+# Wildcard origins for development — no credentials mode needed since
+# we use JWT in the Authorization header, not cookies.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.FRONTEND_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],  # restrict to needed methods
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -41,15 +52,29 @@ app.add_middleware(
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+}
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    # return consistent JSON structure for HTTP errors
-    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    return JSONResponse(
+        {"detail": exc.detail},
+        status_code=exc.status_code,
+        headers=CORS_HEADERS,
+    )
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    # avoid leaking internal details
-    return JSONResponse({"detail": "Internal server error"}, status_code=500)
+    # Print full traceback to the backend terminal for debugging
+    logger.error("UNHANDLED EXCEPTION on %s %s", request.method, request.url.path)
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        {"detail": f"Internal server error: {type(exc).__name__}: {exc}"},
+        status_code=500,
+        headers=CORS_HEADERS,
+    )
 
 # ==================== Authentication ====================
 # Security scheme for JWT tokens
@@ -184,6 +209,32 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     Protected route - requires valid JWT token.
     """
     return current_user
+
+
+@app.patch("/users/me/progress", response_model=UserResponse)
+def update_my_progress(
+    data: UserProgressUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Update XP and/or medals for the current user.
+    - xp_delta: add N to current XP
+    - xp_total: set XP to absolute value
+    - medals: replace medals list
+    Protected route - requires valid JWT token.
+    """
+    try:
+        updated = crud.update_user_xp_medals(
+            db,
+            current_user.id,
+            xp_delta=data.xp_delta or 0,
+            xp_total=data.xp_total,
+            medals=data.medals,
+        )
+    except crud.ClientError as ce:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ce))
+    return updated
 
 # ==================== Lesson Endpoints ====================
 

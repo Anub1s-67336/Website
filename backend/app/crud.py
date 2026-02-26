@@ -5,6 +5,8 @@ from models import User, Lesson, UserProgress
 from schemas import UserRegister, LessonCreate
 from auth import hash_password, verify_password
 from datetime import datetime
+from typing import Optional, List
+import json
 
 # custom exception type for request validation errors
 class ClientError(Exception):
@@ -43,7 +45,9 @@ def create_user(db: Session, user: UserRegister) -> User:
     db_user = User(
         username=user.username,
         email=user.email,
-        hashed_password=hashed_password
+        hashed_password=hashed_password,
+        xp=0,
+        medals_json='["first"]',
     )
     
     # Save to database
@@ -73,6 +77,31 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
         return None
     
     return user
+
+def update_user_xp_medals(
+    db: Session,
+    user_id: int,
+    xp_delta: int = 0,
+    xp_total: Optional[int] = None,
+    medals: Optional[List[str]] = None,
+) -> User:
+    """Update user XP (by delta or absolute value) and medals list."""
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise ClientError("User not found")
+
+    if xp_total is not None:
+        user.xp = max(0, xp_total)
+    else:
+        user.xp = max(0, user.xp + xp_delta)
+
+    if medals is not None:
+        user.medals_json = json.dumps(medals)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
 
 # ==================== Lesson Operations ====================
 

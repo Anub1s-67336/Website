@@ -12,7 +12,9 @@
  * Match each function to the corresponding FastAPI router in the repo.
  */
 
-export const API_URL = 'http://localhost:8000'   // ← change this one line to deploy
+// In dev: requests go to /api/... → Vite proxies to localhost:8000/...  (no CORS)
+// In prod: set VITE_API_URL=https://api.yoursite.com in .env
+export const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 const TOKEN_KEY = 'ss_token'   // localStorage key for JWT
 
@@ -69,6 +71,10 @@ async function request(method, path, body = null) {
   }
 
   if (!res.ok) {
+    // Token expired or invalid — clear it so the user gets redirected to login
+    if (res.status === 401) {
+      clearToken()
+    }
     // FastAPI validation errors have json.detail as array
     const message = Array.isArray(json?.detail)
       ? json.detail.map((e) => e.msg).join(', ')
@@ -84,31 +90,25 @@ async function request(method, path, body = null) {
 
 /**
  * Register a new user.
- * POST /auth/register
+ * POST /register
  * Body: { username, email, password }
  * Returns: { id, username, email }
  */
 export async function register({ username, email, password }) {
-  return request('POST', '/auth/register', { username, email, password })
+  return request('POST', '/register', { username, email, password })
 }
 
 /**
  * Login and receive JWT.
- * POST /auth/login  (FastAPI OAuth2PasswordRequestForm → form-encoded)
- * Returns: { access_token, token_type }
- *
- * Note: FastAPI's OAuth2 form expects 'username' field for the email value.
+ * POST /login
+ * Body: { email, password }  — JSON
+ * Returns: { access_token, token_type, user }
  */
 export async function login({ email, password }) {
-  // FastAPI OAuth2PasswordRequestForm requires form-encoded body
-  const formData = new URLSearchParams()
-  formData.append('username', email)   // FastAPI uses 'username' field
-  formData.append('password', password)
-
-  const res = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${API_URL}/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString(),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   })
 
   let json

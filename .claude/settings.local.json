@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv venv)",
+      "Bash(/c/Users/User/Website/backend/venv/Scripts/python.exe --version)",
+      "Bash(venv/Scripts/pip install -r requirements.txt)",
+      "Bash(../venv/Scripts/python.exe -c \":*)",
+      "Bash(venv/Scripts/pip install \"bcrypt==4.0.1\")",
+      "Bash(# Kill all uvicorn processes taskkill /F /IM uvicorn.exe || true taskkill /F /FI \"\"WINDOWTITLE eq uvicorn*\"\" || true # Kill by port 8000 netstat -ano)",
+      "Read(//c/Users/User/Website/backend/app/**)",
+      "Bash(xargs -r taskkill /F /PID)",
+      "Bash(taskkill /F /PID 3332 2)",
+      "Bash(1 sleep 2 netstat -ano)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /PID 3332)",
+      "Bash(taskkill //F //PID 3332)",
+      "Bash(curl -s -I -X POST http://localhost:8000/register -H \"Content-Type: application/json\" -H \"Origin: http://localhost:5173\" -d '{\"\"username\"\":\"\"u2\"\",\"\"email\"\":\"\"u2@test.com\"\",\"\"password\"\":\"\"testpass123\"\"}')",
+      "Bash(curl -v -X POST http://localhost:8000/register -H \"Content-Type: application/json\" -H \"Origin: http://localhost:5173\" -d '{\"\"username\"\":\"\"u2\"\",\"\"email\"\":\"\"u2@test.com\"\",\"\"password\"\":\"\"testpass123\"\"}')",
+      "Bash(taskkill //F //PID 11948)",
+      "Bash(taskkill //F //PID 6468)",
+      "Bash(taskkill //F //PID 4988)",
+      "Bash(taskkill //F //PID 12560)"
+    ]
+  }
+}

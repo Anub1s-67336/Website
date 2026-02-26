@@ -23,8 +23,10 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    xp: int = 0
+    medals: list[str] = ['first']
     created_at: datetime
-    
+
     class Config:
         from_attributes = True  # Allows conversion from SQLAlchemy models
 
@@ -80,3 +82,12 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+# ==================== Progress Update Schema ====================
+
+class UserProgressUpdateRequest(BaseModel):
+    """Schema for updating user XP and medals via PATCH /users/me/progress"""
+    xp_delta: Optional[int] = 0       # relative XP increment
+    xp_total: Optional[int] = None    # absolute XP override (used by updateXP)
+    medals: Optional[list[str]] = None

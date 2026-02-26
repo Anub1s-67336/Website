@@ -2,20 +2,31 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import json
 from database import Base
 
 # User model - stores user information
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    xp = Column(Integer, default=0)
+    medals_json = Column(Text, default='["first"]')
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
     # Relationship: One user can have many progress records
     progress = relationship("UserProgress", back_populates="user", cascade="all, delete-orphan")
+
+    @property
+    def medals(self) -> list:
+        return json.loads(self.medals_json or '["first"]')
+
+    @medals.setter
+    def medals(self, value: list):
+        self.medals_json = json.dumps(value)
 
 # Lesson model - stores lesson information
 class Lesson(Base):
