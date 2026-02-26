@@ -6,12 +6,38 @@ from schemas import UserRegister, LessonCreate
 from auth import hash_password, verify_password
 from datetime import datetime
 
+# custom exception type for request validation errors
+class ClientError(Exception):
+    """Raised by CRUD functions when input from the client is invalid.
+
+    This allows the HTTP layer to distinguish between genuine client
+    mistakes (duplicate username/email, password length, etc.) and
+    unexpected server-side faults such as database outages or
+    hashing library bugs.
+    """
+    pass
+
 # ==================== User Operations ====================
 
 def create_user(db: Session, user: UserRegister) -> User:
-    """Create a new user in the database"""
-    # Hash the password before saving
-    hashed_password = hash_password(user.password)
+    """Create a new user in the database.
+
+    This function performs minimal validation and raises ValueError on
+    problems so that the HTTP layer can convert them into 400 responses.
+    Caller should catch and translate the exception.
+    """
+    # duplicates are easier to detect at the CRUD level as well
+    if get_user_by_username(db, user.username):
+        raise ClientError("Username already registered")
+    if get_user_by_email(db, user.email):
+        raise ClientError("Email already registered")
+
+    # Hash the password before saving, handle too-long passwords gracefully
+    try:
+        hashed_password = hash_password(user.password)
+    except ValueError:
+        # propagate so route returns 400 instead of 500
+        raise
     
     # Create new user object
     db_user = User(

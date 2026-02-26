@@ -109,31 +109,45 @@ def read_root():
 
 # ==================== User Endpoints ====================
 
-@app.post("/register", response_model=UserResponse)
+@app.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user: UserRegister, db: Session = Depends(get_db)):
     """
     Register a new user.
-    
+
+    This endpoint validates the request and delegates most checks to the
+    CRUD layer.  If the client submits invalid data (duplicate username,
+    duplicate email, a password longer than bcrypt's 72-byte limit, or
+    even a failure inside the hashing library) a ``ValueError`` is raised
+    internally and caught here.  The response in that case will be a 400
+    status with JSON:
+
+        {"detail": "<error message>"}
+
+    On success the newly created user record is returned (password is
+    never included) and the HTTP status code is 201 Created.
+
     - **username**: Unique username
     - **email**: Valid email address
     - **password**: Plain text password (will be hashed)
     """
-    # Check if username already exists
-    if crud.get_user_by_username(db, user.username):
+    # Ensure password byte-length fits bcrypt limit (72 bytes)
+    if len(user.password.encode("utf-8")) > 72:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
+            detail="Password too long (max 72 bytes). Choose a shorter password."
         )
-    
-    # Check if email already exists
-    if crud.get_user_by_email(db, user.email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-    
-    # Create new user
-    db_user = crud.create_user(db, user)
+
+    # attempt creation with centralized validations in CRUD layer
+    # only ClientError exceptions represent genuine client mistakes
+    # (duplicate username/email).  We intentionally avoid catching
+    # generic ValueError so that unexpected failures (e.g. bcrypt bugs)
+    # propagate as 500 errors.
+    try:
+        db_user = crud.create_user(db, user)
+    except crud.ClientError as ce:
+        # convert known client-side errors into 400 responses
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ce))
+
     return db_user
 
 @app.post("/login", response_model=TokenResponse)

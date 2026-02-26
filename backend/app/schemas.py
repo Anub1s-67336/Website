@@ -10,7 +10,8 @@ class UserRegister(BaseModel):
     """Schema for user registration"""
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr
-    password: str = Field(min_length=8)
+    # bcrypt has a 72-byte input limit; enforce a reasonable max length
+    password: str = Field(min_length=8, max_length=72)
 
 class UserLogin(BaseModel):
     """Schema for user login"""
