@@ -1,0 +1,80 @@
+/* ── Global reset & base ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Nunito', sans-serif;
+  background: #060713;
+  color: #fff;
+}
+
+button { font-family: 'Nunito', sans-serif; }
+input  { font-family: 'Nunito', sans-serif; }
+
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(79,195,247,0.3); border-radius: 2px; }
+
+/* ── Keyframes ─────────────────────────────────────────────────── */
+@keyframes profFloat {
+  0%, 100% { transform: translateY(0);  }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes spinOrb {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes ptUp {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-90px) scale(0); opacity: 0; }
+}
+
+@keyframes popIn {
+  0%   { transform: scale(0) rotate(-8deg); opacity: 0; }
+  70%  { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes organPulse {
+  0%, 100% { box-shadow: 0 0 0 0  rgba(167,139,250,0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(167,139,250,0);  }
+}
+
+@keyframes sndBar {
+  0%, 100% { height: 4px;  }
+  50%       { height: 16px; }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.7;  }
+}
+
+@keyframes inputGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79,195,247,0); }
+  50%       { box-shadow: 0 0 0 3px rgba(79,195,247,0.25); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0);  }
+  20%, 60%  { transform: translateX(-6px); }
+  40%, 80%  { transform: translateX(6px);  }
+}
+
+/* ── Responsive helpers ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .desktop-only { display: none !important; }
+}
+@media (min-width: 641px) {
+  .mobile-only { display: none !important; }
+}
