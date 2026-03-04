@@ -2,11 +2,11 @@
   "name": "smart-sciences",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n BACK,FRONT -c cyan,magenta \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend/app && ../venv/Scripts/uvicorn main:app --reload --host 127.0.0.1 --port 8000",
-    "frontend": "cd frontend/Smart-Sciences && npm run dev"
+    "dev": "npx concurrently -n BACK,FRONT -c cyan,magenta \"npm run backend\" \"npm run frontend\"",
+    "backend": "node start-backend.js",
+    "frontend": "cd frontend/Smart-Sciences && npx vite"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^9.2.1"
   }
 }
