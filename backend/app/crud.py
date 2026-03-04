@@ -47,7 +47,7 @@ def create_user(db: Session, user: UserRegister) -> User:
         email=user.email,
         hashed_password=hashed_password,
         xp=0,
-        medals_json='["first"]',
+        medals_json='[]',   # medals earned through gameplay, not pre-assigned
     )
     
     # Save to database

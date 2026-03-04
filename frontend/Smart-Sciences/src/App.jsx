@@ -3,6 +3,7 @@
  *
  * Screens: home | body | lab | medals | roadmap | electron | lesson
  * Lesson routing: currentLesson state (0-2) determines which lesson to show.
+ * IntroLesson: shown when user xp === 0 && !localStorage.ss_intro_done
  */
 
 import { useState, useEffect, useCallback } from 'react'
@@ -14,6 +15,7 @@ import { T }                from './data/translations.js'
 import { Stars }        from './components/Stars.jsx'
 import { Particles, makeBurst } from './components/Particles.jsx'
 import { Sidebar }      from './components/Sidebar.jsx'
+import { FloatingProf } from './components/FloatingProf.jsx'
 import { MobileTopbar } from './components/MobileTopbar.jsx'
 import { MobileNav }    from './components/MobileNav.jsx'
 import { ContactModal } from './components/ContactModal.jsx'
@@ -29,11 +31,13 @@ import { RoadmapScreen }  from './screens/RoadmapScreen.jsx'
 import { ElectronGame }   from './screens/ElectronGame.jsx'
 import { Tutorial }       from './screens/Tutorial.jsx'
 import { LessonScreen }   from './screens/LessonScreen.jsx'
+import { IntroLesson }       from './screens/IntroLesson.jsx'
+import { ChemBasicsLesson } from './screens/ChemBasicsLesson.jsx'
 
 // ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const { user, lang, loading, tutorialSeen, setTutorialSeen } = useAuth()
+  const { user, lang, loading, tutorialSeen, setTutorialSeen, xp } = useAuth()
 
   const [screen,       setScreen]       = useState('home')
   const [currentLesson,setCurrentLesson]= useState(0)     // 0 | 1 | 2
@@ -43,6 +47,7 @@ export default function App() {
   const [profHappy,    setProfHappy]    = useState(false)
   const [showContact,  setShowContact]  = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
+  const [introDone,    setIntroDone]    = useState(() => !!localStorage.getItem('ss_intro_done'))
 
   const t = T[lang]
 
@@ -62,8 +67,9 @@ export default function App() {
       lab:      'lab',
       medals:   'medals',
       roadmap:  'roadmap',
-      electron: 'electron',
-      lesson:   'home',      // professor message handled inside LessonScreen
+      electron:   'electron',
+      lesson:     'home',      // professor message handled inside LessonScreen
+      chembasics: 'chembasics',
     }
     setProfMsg(t.prof[map[screen] ?? 'home'])
   }, [screen, lang])
@@ -83,6 +89,11 @@ export default function App() {
   function onTutorialComplete() {
     setShowTutorial(false)
     setTutorialSeen()
+  }
+
+  function onIntroComplete() {
+    localStorage.setItem('ss_intro_done', '1')
+    setIntroDone(true)
   }
 
   // ── Loading splash ────────────────────────────────────────────
@@ -114,6 +125,16 @@ export default function App() {
     )
   }
 
+  // ── Intro lesson (xp === 0 on first ever login) ───────────────
+  if (!introDone && xp === 0) {
+    return (
+      <>
+        <Stars />
+        <IntroLesson lang={lang} onComplete={onIntroComplete} />
+      </>
+    )
+  }
+
   // ── Main app ──────────────────────────────────────────────────
   const screenProps = { t, lang, setMsg: setProfMsg, setHappy, addPts }
 
@@ -135,8 +156,6 @@ export default function App() {
           <Sidebar
             screen={screen}
             setScreen={setScreen}
-            profMsg={profMsg || t.prof.home}
-            profHappy={profHappy}
             t={t}
           />
 
@@ -164,6 +183,12 @@ export default function App() {
                 onBack={() => setScreen('home')}
               />
             )}
+            {screen === 'chembasics' && (
+              <ChemBasicsLesson
+                {...screenProps}
+                onBack={() => setScreen('home')}
+              />
+            )}
           </main>
         </div>
 
@@ -173,6 +198,9 @@ export default function App() {
         {/* Contact modal */}
         {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} />}
       </div>
+
+      {/* Floating Professor Atom (fixed top-right) */}
+      <FloatingProf msg={profMsg || t.prof.home} happy={profHappy} />
 
       {/* Tutorial overlay */}
       <AnimatePresence>

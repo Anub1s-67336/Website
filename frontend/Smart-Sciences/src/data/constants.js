@@ -97,14 +97,37 @@ export const TOPIC_META = [
   { icon: '💫', grad: 'linear-gradient(135deg,#db2777,#e11d48)', prog: 20, mol: 'C₈H₁₁NO₂',         tc: 'rgba(251,113,133,0.2)', tcol: '#fb7185' },
 ]
 
-// ── Body organ click-zone positions (% of SVG viewBox 100×162) ─
+// ── Body organ click-zone positions ─────────────────────────────
+// Coordinates are % of the container div.
+// SVG viewBox "0 0 100 162", aspectRatio 0.62 → fills container exactly.
+// Coordinate math: SVG_y = top% × 1.62   |   SVG_h = h% × 1.62
+//
+// DOM render order matters: organs listed LATER sit ON TOP in z-order.
+// Heart must come LAST so it receives clicks where it overlaps the lungs.
 export const ORGAN_POS = {
-  brain:   { x: 37, y: 2,  w: 26, h: 16, emoji: '🧠' },
-  heart:   { x: 38, y: 32, w: 12, h: 12, emoji: '❤️' },
-  lungs:   { x: 22, y: 28, w: 56, h: 18, emoji: '🫁' },
-  liver:   { x: 50, y: 44, w: 18, h: 14, emoji: '🟫' },
-  stomach: { x: 32, y: 44, w: 16, h: 14, emoji: '🟡' },
-  muscle:  { x: 24, y: 64, w: 52, h: 20, emoji: '💪' },
+  // brain: inside head  (SVG head ellipse cy=11 ry=11 → y 0–22)
+  brain:   { x: 38, y: 1,  w: 24, h: 12, emoji: '🧠', col: '#818cf8' },
+  // SVG: x 38–62, y 1.6–21 ✓
+
+  // lungs: bilateral upper torso  (SVG torso rect starts y=21)
+  lungs:   { x: 21, y: 14, w: 58, h: 17, emoji: '🫁', col: '#4fc3f7' },
+  // SVG: x 21–79, y 22.7–50.3 ✓
+
+  // liver: right-lobe mid-abdomen
+  liver:   { x: 50, y: 26, w: 18, h: 10, emoji: '🟤', col: '#fb923c' },
+  // SVG: x 50–68, y 42.1–58.4 ✓
+
+  // stomach: left upper abdomen
+  stomach: { x: 30, y: 27, w: 18, h: 10, emoji: '🟡', col: '#facc15' },
+  // SVG: x 30–48, y 43.7–59.9 ✓
+
+  // muscle: thighs  (SVG thigh rects y 62–106)
+  muscle:  { x: 28, y: 39, w: 44, h: 27, emoji: '💪', col: '#a78bfa' },
+  // SVG: x 28–72, y 63.2–106.9 ✓
+
+  // heart: upper-left chest — rendered LAST so it is on top of lungs
+  heart:   { x: 36, y: 16, w: 16, h: 9,  emoji: '❤️', col: '#f87171' },
+  // SVG: x 36–52, y 25.9–40.5 ✓
 }
 
 // ── Medal definitions ───────────────────────────────────────────
@@ -119,7 +142,8 @@ export const MEDAL_DEF = [
   { id: 'daily_lab',       icon: '📅', col: '#4ade80' },
   { id: 'lesson_atp',      icon: '⚡', col: '#67e8f9' },
   { id: 'lesson_calcium',  icon: '🦴', col: '#c4b5fd' },
-  { id: 'lesson_dopamine', icon: '🧠', col: '#f9a8d4' },
+  { id: 'lesson_dopamine',   icon: '🧠', col: '#f9a8d4' },
+  { id: 'lesson_chembasics', icon: '⚗️', col: '#34d399' },
 ]
 
 // ── Roadmap level icons / colours ──────────────────────────────
@@ -133,5 +157,6 @@ export const NAV = [
   { id: 'lab',      icon: '🧪' },
   { id: 'electron', icon: '⚡' },
   { id: 'medals',   icon: '🏆' },
-  { id: 'roadmap',  icon: '🗺' },
+  { id: 'roadmap',    icon: '🗺' },
+  { id: 'chembasics', icon: '⚗️' },
 ]

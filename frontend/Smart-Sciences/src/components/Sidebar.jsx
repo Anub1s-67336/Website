@@ -1,10 +1,9 @@
 import { useAuth } from '../context/AuthContext.jsx'
-import { Prof }    from './Prof.jsx'
 import { NAV }     from '../data/constants.js'
 import { xpToLevel, xpLevelPercent } from '../data/constants.js'
 import { snd }     from '../utils/sound.js'
 
-export function Sidebar({ screen, setScreen, profMsg, profHappy, t }) {
+export function Sidebar({ screen, setScreen, t }) {
   const { xp, medals, lang, setLang, logout, user } = useAuth()
   const level = xpToLevel(xp)
   const pct   = xpLevelPercent(xp)
@@ -100,10 +99,6 @@ export function Sidebar({ screen, setScreen, profMsg, profHappy, t }) {
         )}
       </nav>
 
-      {/* Professor */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
-        <Prof msg={profMsg} happy={profHappy} />
-      </div>
     </aside>
   )
 }
