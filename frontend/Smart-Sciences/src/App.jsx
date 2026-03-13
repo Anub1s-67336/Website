@@ -31,8 +31,11 @@ import { RoadmapScreen }  from './screens/RoadmapScreen.jsx'
 import { ElectronGame }   from './screens/ElectronGame.jsx'
 import { Tutorial }       from './screens/Tutorial.jsx'
 import { LessonScreen }   from './screens/LessonScreen.jsx'
-import { IntroLesson }       from './screens/IntroLesson.jsx'
+import { IntroLesson }      from './screens/IntroLesson.jsx'
 import { ChemBasicsLesson } from './screens/ChemBasicsLesson.jsx'
+import { PeriodicTable }    from './screens/PeriodicTable.jsx'
+import { MoleculeBuilder }  from './screens/MoleculeBuilder.jsx'
+import { AchievementToast } from './components/AchievementToast.jsx'
 
 // ─────────────────────────────────────────────────────────────────
 
@@ -62,14 +65,16 @@ export default function App() {
   // Sync professor message on screen / language change
   useEffect(() => {
     const map = {
-      home:     'home',
-      body:     'body',
-      lab:      'lab',
-      medals:   'medals',
-      roadmap:  'roadmap',
+      home:       'home',
+      body:       'body',
+      lab:        'lab',
+      medals:     'medals',
+      roadmap:    'roadmap',
       electron:   'electron',
-      lesson:     'home',      // professor message handled inside LessonScreen
+      lesson:     'home',       // professor message handled inside LessonScreen
       chembasics: 'chembasics',
+      table:      'table',
+      molecule:   'molecule',
     }
     setProfMsg(t.prof[map[screen] ?? 'home'])
   }, [screen, lang])
@@ -189,6 +194,16 @@ export default function App() {
                 onBack={() => setScreen('home')}
               />
             )}
+            {screen === 'table' && (
+              <PeriodicTable
+                {...screenProps}
+                setScreen={setScreen}
+                setLesson={setCurrentLesson}
+              />
+            )}
+            {screen === 'molecule' && (
+              <MoleculeBuilder {...screenProps} />
+            )}
           </main>
         </div>
 
@@ -198,6 +213,9 @@ export default function App() {
         {/* Contact modal */}
         {showContact && <ContactModal t={t} onClose={() => setShowContact(false)} />}
       </div>
+
+      {/* Achievement toast (fixed bottom-right) */}
+      <AchievementToast />
 
       {/* Floating Professor Atom (fixed top-right) */}
       <FloatingProf msg={profMsg || t.prof.home} happy={profHappy} />

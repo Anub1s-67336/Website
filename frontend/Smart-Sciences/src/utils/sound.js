@@ -30,6 +30,19 @@ const PATTERNS = {
   levelup: [[523, 0, 0.1, 'sine', 0.3], [784, 0.11, 0.1, 'sine', 0.3], [1047, 0.22, 0.25, 'sine', 0.35]],
   // Quest complete: 5-note triumphant run
   quest:   [[392, 0, 0.08, 'sine', 0.28], [523, 0.09, 0.08, 'sine', 0.28], [659, 0.18, 0.08, 'sine', 0.28], [784, 0.27, 0.08, 'sine', 0.28], [1047, 0.36, 0.3, 'sine', 0.32]],
+  // ── Lab sounds ───────────────────────────────────────────────
+  // Liquid pour: descending gurgle
+  pour:    [[600, 0, 0.07, 'sine', 0.22], [450, 0.07, 0.07, 'sine', 0.18], [340, 0.14, 0.1, 'sine', 0.14]],
+  // Acid hiss: soft sawtooth noise burst
+  hiss:    [[180, 0, 0.18, 'sawtooth', 0.1], [220, 0.06, 0.18, 'sawtooth', 0.09], [160, 0.14, 0.16, 'sawtooth', 0.07]],
+  // Water boil: low bubbling sequence
+  boil:    [[190, 0, 0.09, 'sine', 0.18], [220, 0.11, 0.09, 'sine', 0.18], [195, 0.22, 0.1, 'sine', 0.18], [210, 0.34, 0.14, 'sine', 0.14]],
+  // Color magic: sparkly ascending arpeggio
+  magic:   [[880, 0, 0.08, 'sine', 0.22], [1108, 0.09, 0.07, 'sine', 0.2], [1320, 0.18, 0.07, 'sine', 0.2], [1760, 0.27, 0.2, 'sine', 0.22]],
+  // Burst / explosion: low boom + crack
+  burst:   [[55, 0, 0.45, 'sine', 0.55], [130, 0.02, 0.28, 'sawtooth', 0.28], [820, 0.03, 0.07, 'square', 0.18]],
+  // Ignite: quick click then rising whoosh
+  ignite:  [[120, 0, 0.05, 'square', 0.28], [200, 0.05, 0.1, 'sawtooth', 0.18], [360, 0.12, 0.18, 'sine', 0.12]],
 }
 
 export function snd(type) {

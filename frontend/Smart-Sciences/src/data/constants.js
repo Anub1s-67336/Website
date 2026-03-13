@@ -97,37 +97,22 @@ export const TOPIC_META = [
   { icon: '💫', grad: 'linear-gradient(135deg,#db2777,#e11d48)', prog: 20, mol: 'C₈H₁₁NO₂',         tc: 'rgba(251,113,133,0.2)', tcol: '#fb7185' },
 ]
 
-// ── Body organ click-zone positions ─────────────────────────────
-// Coordinates are % of the container div.
-// SVG viewBox "0 0 100 162", aspectRatio 0.62 → fills container exactly.
-// Coordinate math: SVG_y = top% × 1.62   |   SVG_h = h% × 1.62
+// ── Body organ positions ─────────────────────────────────────────
+// cx/cy = organ visual centre in SVG viewBox "0 0 100 162" coords.
+// Used to calculate particle burst position on click.
+// Actual organ shapes are drawn directly in BodyScreen.jsx as SVG paths.
 //
-// DOM render order matters: organs listed LATER sit ON TOP in z-order.
-// Heart must come LAST so it receives clicks where it overlaps the lungs.
+// Z-order (back → front) is determined by render order in BodyScreen:
+//   muscle → kidneys → intestine → liver → stomach → lungs → heart → brain
 export const ORGAN_POS = {
-  // brain: inside head  (SVG head ellipse cy=11 ry=11 → y 0–22)
-  brain:   { x: 38, y: 1,  w: 24, h: 12, emoji: '🧠', col: '#818cf8' },
-  // SVG: x 38–62, y 1.6–21 ✓
-
-  // lungs: bilateral upper torso  (SVG torso rect starts y=21)
-  lungs:   { x: 21, y: 14, w: 58, h: 17, emoji: '🫁', col: '#4fc3f7' },
-  // SVG: x 21–79, y 22.7–50.3 ✓
-
-  // liver: right-lobe mid-abdomen
-  liver:   { x: 50, y: 26, w: 18, h: 10, emoji: '🟤', col: '#fb923c' },
-  // SVG: x 50–68, y 42.1–58.4 ✓
-
-  // stomach: left upper abdomen
-  stomach: { x: 30, y: 27, w: 18, h: 10, emoji: '🟡', col: '#facc15' },
-  // SVG: x 30–48, y 43.7–59.9 ✓
-
-  // muscle: thighs  (SVG thigh rects y 62–106)
-  muscle:  { x: 28, y: 39, w: 44, h: 27, emoji: '💪', col: '#a78bfa' },
-  // SVG: x 28–72, y 63.2–106.9 ✓
-
-  // heart: upper-left chest — rendered LAST so it is on top of lungs
-  heart:   { x: 36, y: 16, w: 16, h: 9,  emoji: '❤️', col: '#f87171' },
-  // SVG: x 36–52, y 25.9–40.5 ✓
+  brain:     { cx: 50, cy: 14,  emoji: '🧠', col: '#818cf8' },
+  lungs:     { cx: 50, cy: 43,  emoji: '🫁', col: '#4fc3f7' },
+  heart:     { cx: 43, cy: 40,  emoji: '❤️', col: '#f87171' },
+  liver:     { cx: 61, cy: 63,  emoji: '🟤', col: '#fb923c' },
+  stomach:   { cx: 39, cy: 61,  emoji: '🟡', col: '#facc15' },
+  kidneys:   { cx: 50, cy: 65,  emoji: '🫘', col: '#86efac' },
+  intestine: { cx: 50, cy: 74,  emoji: '🌀', col: '#e879f9' },
+  muscle:    { cx: 50, cy: 100, emoji: '💪', col: '#a78bfa' },
 }
 
 // ── Medal definitions ───────────────────────────────────────────
@@ -152,11 +137,36 @@ export const LV_COLS  = ['#22d3ee', '#a78bfa', '#f472b6', '#4ade80', '#fbbf24']
 
 // ── Navigation items ────────────────────────────────────────────
 export const NAV = [
-  { id: 'home',     icon: '🏠' },
-  { id: 'body',     icon: '🫀' },
-  { id: 'lab',      icon: '🧪' },
-  { id: 'electron', icon: '⚡' },
-  { id: 'medals',   icon: '🏆' },
+  { id: 'home',       icon: '🏠' },
+  { id: 'body',       icon: '🫀' },
+  { id: 'lab',        icon: '🧪' },
+  { id: 'table',      icon: '⚛️' },
+  { id: 'molecule',   icon: '🧬' },
+  { id: 'electron',   icon: '⚡' },
+  { id: 'medals',     icon: '🏆' },
   { id: 'roadmap',    icon: '🗺' },
   { id: 'chembasics', icon: '⚗️' },
+]
+
+// ── Achievement catalogue (mirrors backend ACHIEVEMENTS_CATALOG) ─
+// Used by AuthContext for instant toast data without an extra API call.
+export const ACHIEVEMENT_DEF = [
+  { id: 'first_lab',      icon: '🧪', titleRU: 'Первый опыт',              titleUZ: 'Birinchi tajriba',        xp: 15 },
+  { id: 'volcano',        icon: '🌋', titleRU: 'Вулканолог',               titleUZ: 'Vulqonshunos',            xp: 35 },
+  { id: 'color_magic',    icon: '🎨', titleRU: 'Алхимик',                  titleUZ: 'Alkimyogar',              xp: 25 },
+  { id: 'neutralizer',    icon: '⚗️', titleRU: 'Нейтрализатор',           titleUZ: 'Neytralizator',           xp: 20 },
+  { id: 'danger_zone',    icon: '💥', titleRU: 'Отважный химик',           titleUZ: 'Jasur kimyogar',          xp: 40 },
+  { id: 'table_open',     icon: '⚛️', titleRU: 'Исследователь атомов',    titleUZ: 'Atom tadqiqotchisi',      xp: 10 },
+  { id: 'mol_h2o',        icon: '💧', titleRU: 'Вода жизни',               titleUZ: 'Hayot suvi',              xp: 20 },
+  { id: 'mol_co2',        icon: '🌿', titleRU: 'Дыхание планеты',          titleUZ: 'Sayyora nafasi',          xp: 20 },
+  { id: 'mol_nacl',       icon: '🧂', titleRU: 'Химия вкуса',              titleUZ: 'Ta\'m kimyosi',           xp: 15 },
+  { id: 'mol_nh3',        icon: '💨', titleRU: 'Запах аммиака',            titleUZ: 'Ammiak hidi',             xp: 25 },
+  { id: 'mol_o2',         icon: '🫁', titleRU: 'Молекула жизни',           titleUZ: 'Hayot molekulasi',        xp: 15 },
+  { id: 'quest_detective',icon: '🔍', titleRU: 'Детектив лаборатории',     titleUZ: 'Laboratoriya detektivi',  xp: 50 },
+  { id: 'quest_volcano',  icon: '🌋', titleRU: 'Вулкан для ярмарки',       titleUZ: 'Yarmarqa vulqoni',        xp: 40 },
+  { id: 'quest_emergency',icon: '🚨', titleRU: 'Спасатель',                titleUZ: 'Qutqaruvchi',             xp: 60 },
+  { id: 'first_lesson',   icon: '📚', titleRU: 'Первый урок',              titleUZ: 'Birinchi dars',           xp: 10 },
+  { id: 'lesson_5',       icon: '🎓', titleRU: '5 уроков пройдено',        titleUZ: '5 ta dars o\'tildi',      xp: 30 },
+  { id: 'xp_100',         icon: '⭐', titleRU: '100 XP!',                  titleUZ: '100 XP!',                 xp:  0 },
+  { id: 'xp_500',         icon: '🌟', titleRU: '500 XP — эксперт!',        titleUZ: '500 XP — ekspert!',       xp:  0 },
 ]

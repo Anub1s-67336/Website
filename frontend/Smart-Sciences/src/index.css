@@ -103,6 +103,79 @@ input  { font-family: 'Nunito', sans-serif; }
   to   { opacity: 1; transform: translateY(0);    }
 }
 
+/* ── Epic Lab animations ──────────────────────────────────────── */
+@keyframes bubbleRise {
+  0%   { transform: translateY(0)    scale(1);   opacity: 0.65; }
+  80%  { opacity: 0.2; }
+  100% { transform: translateY(-80px) scale(0.4); opacity: 0; }
+}
+
+@keyframes steamWaft {
+  0%   { transform: translateY(0)    scaleX(1);   opacity: 0.22; }
+  50%  { transform: translateY(-18px) scaleX(1.5); opacity: 0.12; }
+  100% { transform: translateY(-42px) scaleX(2.2); opacity: 0; }
+}
+
+@keyframes flaskShake {
+  0%, 100% { transform: translateX(0)   rotate(0deg);  }
+  20%       { transform: translateX(-5px) rotate(-2deg); }
+  40%       { transform: translateX(5px)  rotate(2deg);  }
+  60%       { transform: translateX(-3px) rotate(-1deg); }
+  80%       { transform: translateX(3px)  rotate(1deg);  }
+}
+
+@keyframes foamRise {
+  0%   { transform: translateY(50px); opacity: 0;   }
+  25%  { opacity: 0.9; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1)    scaleX(1);    }
+  25%       { transform: scaleY(1.08) scaleX(0.93); }
+  50%       { transform: scaleY(0.95) scaleX(1.06); }
+  75%       { transform: scaleY(1.04) scaleX(0.96); }
+}
+
+@keyframes labelPop {
+  0%   { transform: scale(0.65); opacity: 0; }
+  70%  { transform: scale(1.1);  opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes colorFlash {
+  0%, 100% { filter: brightness(1); }
+  40%       { filter: brightness(2) saturate(2.5); }
+}
+
+/* ── Atom model orbit animations (PeriodicTable / ElementCard) ─── */
+@keyframes orbit0 {
+  from { transform: rotate(0deg)   translateX(-36px) rotate(0deg);    }
+  to   { transform: rotate(360deg) translateX(-36px) rotate(-360deg); }
+}
+@keyframes orbit1 {
+  from { transform: rotate(0deg)   translateX(-56px) rotate(0deg);    }
+  to   { transform: rotate(360deg) translateX(-56px) rotate(-360deg); }
+}
+@keyframes orbit2 {
+  from { transform: rotate(0deg)   translateX(-76px) rotate(0deg);    }
+  to   { transform: rotate(360deg) translateX(-76px) rotate(-360deg); }
+}
+@keyframes orbit3 {
+  from { transform: rotate(0deg)   translateX(-96px) rotate(0deg);    }
+  to   { transform: rotate(360deg) translateX(-96px) rotate(-360deg); }
+}
+
+/* ── Achievement toast animations ──────────────────────────────── */
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(60px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+}
+@keyframes toastProgress {
+  from { width: 100%; }
+  to   { width: 0%;   }
+}
+
 /* ── Responsive helpers ────────────────────────────────────────── */
 @media (max-width: 640px) {
   .desktop-only { display: none !important; }

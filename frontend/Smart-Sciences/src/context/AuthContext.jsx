@@ -2,17 +2,20 @@
  * AuthContext
  * ─────────────────────────────────────────────────────────────
  * Provides application-wide state:
- *   user            – { id, username, email } | null
- *   xp              – number (total accumulated)
- *   medals          – string[]
- *   lang            – 'RU' | 'UZ'
- *   tutorialSeen    – boolean (persisted in localStorage)
- *   dailyQuests     – { date, quests: { [id]: { progress, completed } } }
+ *   user                 – { id, username, email } | null
+ *   xp                   – number (total accumulated)
+ *   medals               – string[]
+ *   lang                 – 'RU' | 'UZ'
+ *   tutorialSeen         – boolean (persisted in localStorage)
+ *   dailyQuests          – { date, quests: { [id]: { progress, completed } } }
+ *   pendingAchievement   – achievement to show in toast | null
  *
  * Methods:
  *   login / register / logout
  *   addXP(delta)                  — add XP and persist
  *   addMedal(id)                  — add medal if not present, persist
+ *   earnAchievement(id)           — grant achievement + show toast
+ *   clearPendingAchievement()     — dismiss toast
  *   setLang(lang)                 — switch UI language
  *   setTutorialSeen()             — mark tutorial as done
  *   incrementQuestProgress(id, n) — add n progress to daily quest, auto-complete
@@ -26,9 +29,17 @@ import {
   getUserData,
   updateProgress,
   getToken,
+  earnAchievementApi,
+  getUnseenAchievements,
+  markAchievementsSeen,
 } from '../api/api.js'
-import { snd }          from '../utils/sound.js'
-import { DAILY_QUESTS } from '../data/constants.js'
+import { snd }                       from '../utils/sound.js'
+import { DAILY_QUESTS, ACHIEVEMENT_DEF } from '../data/constants.js'
+
+// ── Local achievement storage key ─────────────────────────────
+const ACH_KEY = 'ss_achievements'   // localStorage: string[]
+function loadLocalAch()  { try { return JSON.parse(localStorage.getItem(ACH_KEY) ?? '[]') } catch { return [] } }
+function saveLocalAch(a) { localStorage.setItem(ACH_KEY, JSON.stringify(a)) }
 
 const AuthContext = createContext(null)
 
@@ -50,6 +61,9 @@ export function AuthProvider({ children }) {
   const [medals, setMedals] = useState(['first'])
   const [lang,   setLang]   = useState('RU')
   const [loading, setLoading] = useState(true)
+
+  // Achievement toast state
+  const [pendingAchievement, setPendingAchievement] = useState(null)
 
   // Tutorial seen — persisted in localStorage
   const [tutorialSeen, setTutorialSeenRaw] = useState(
@@ -133,6 +147,57 @@ export function AuthProvider({ children }) {
     })
   }, [])
 
+  // ── Earn Achievement ────────────────────────────────────────
+  // Idempotent: shows toast only on first grant (tracked in localStorage).
+  const earnAchievement = useCallback(async (achievementId) => {
+    const already = loadLocalAch()
+    if (already.includes(achievementId)) return   // already earned
+
+    // Look up local catalogue for instant toast data
+    const def = ACHIEVEMENT_DEF.find(a => a.id === achievementId)
+    if (!def) return
+
+    // Mark locally first (optimistic)
+    const next = [...already, achievementId]
+    saveLocalAch(next)
+
+    // Show toast
+    setPendingAchievement({ ...def, lang })
+
+    // Persist to backend (fire-and-forget)
+    if (getToken()) {
+      earnAchievementApi(achievementId).catch(() => {})
+    }
+  }, [lang])
+
+  const clearPendingAchievement = useCallback(() => {
+    setPendingAchievement(null)
+    // Mark as seen on backend
+    if (getToken()) {
+      markAchievementsSeen().catch(() => {})
+    }
+  }, [])
+
+  // ── On login: fetch unseen achievements and queue first one ─
+  const fetchUnseen = useCallback(async () => {
+    if (!getToken()) return
+    try {
+      const { achievements } = await getUnseenAchievements()
+      if (!achievements?.length) return
+      // Add them to local storage
+      const local = loadLocalAch()
+      const toAdd = achievements.map(a => a.id).filter(id => !local.includes(id))
+      if (toAdd.length) saveLocalAch([...local, ...toAdd])
+      // Show first one as toast
+      const first = achievements[0]
+      const def   = ACHIEVEMENT_DEF.find(a => a.id === first.id)
+      if (def) setPendingAchievement({ ...def, lang })
+      await markAchievementsSeen()
+    } catch {
+      // silently ignore — backend may not have achievements yet
+    }
+  }, [lang])
+
   // ── Mark tutorial as seen ───────────────────────────────────
   const setTutorialSeen = useCallback(() => {
     localStorage.setItem('ss_tutorial_seen', '1')
@@ -173,12 +238,22 @@ export function AuthProvider({ children }) {
     })
   }, [addXP, addMedal])
 
+  // Fetch unseen achievements shortly after login
+  useEffect(() => {
+    if (!user) return
+    const t = setTimeout(fetchUnseen, 1200)
+    return () => clearTimeout(t)
+  }, [user])  // eslint-disable-line react-hooks/exhaustive-deps
+
   const value = {
     user, xp, medals, lang, loading,
     tutorialSeen,
     dailyQuests,
+    pendingAchievement,
     login, register, logout,
     addXP, addMedal,
+    earnAchievement,
+    clearPendingAchievement,
     setLang,
     setTutorialSeen,
     incrementQuestProgress,

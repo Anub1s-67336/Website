@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # configuration from environment
-from config import settings
+from .config import settings
 
 # database URL (can point to sqlite or any other supported backend)
 DATABASE_URL = settings.DATABASE_URL

@@ -1,4 +1,5 @@
 # Main FastAPI application
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
@@ -12,30 +13,42 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Import database and models
-from database import engine, get_db, Base
-from models import User
-import models
+from .database import engine, get_db, Base, verify_schema, SessionLocal
+from .models import User, Achievement, UserAchievement  # noqa: F401 — registers ORM metadata
 
 # Import configuration, authentication, and CRUD
-from config import settings
-from auth import create_access_token, verify_token
-import crud
-from schemas import (
+from .config import settings
+from .auth import create_access_token, verify_token
+from . import crud
+from .schemas import (
     UserRegister, UserLogin, UserResponse, TokenResponse,
     LessonCreate, LessonResponse,
     UserProgressCreate, UserProgressResponse, LessonProgressResponse,
     UserProgressUpdateRequest,
+    AchievementOut, UnseenAchievementsResponse, GrantAchievementResponse,
 )
 
-# Auto-fix outdated SQLite schema (drops & recreates DB if columns are missing)
-from database import verify_schema
-verify_schema()
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run DB setup on startup; nothing special on shutdown."""
+    try:
+        verify_schema()
+    except Exception as _e:
+        logger.warning("verify_schema() failed (non-fatal): %s", _e)
+    Base.metadata.create_all(bind=engine)
+    # Seed achievement catalogue (idempotent — only runs if table is empty)
+    db = SessionLocal()
+    try:
+        crud.seed_achievements(db)
+    finally:
+        db.close()
+    logger.info("Database tables ready.")
+    yield
+
 
 # Initialize FastAPI app
-app = FastAPI(title="Learning Platform API", version="1.0.0")
+app = FastAPI(title="Learning Platform API", version="1.0.0", lifespan=lifespan)
 
 # ==================== CORS Configuration ====================
 # Wildcard origins for development — no credentials mode needed since
@@ -286,6 +299,59 @@ def get_user_progress(
     """
     return crud.get_user_lessons_with_progress(db, current_user.id)
 
+# ==================== Achievement Endpoints ====================
+
+@app.post(
+    "/users/me/achievements/{achievement_id}",
+    response_model=GrantAchievementResponse,
+    status_code=status.HTTP_200_OK,
+)
+def earn_achievement(
+    achievement_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Grant an achievement to the current user.
+    Idempotent — repeated calls are safe (granted=False if already owned).
+    Also auto-grants XP milestone achievements.
+    """
+    result = crud.grant_achievement(db, current_user.id, achievement_id)
+    crud.check_xp_milestones(db, current_user.id)
+    return GrantAchievementResponse(
+        granted=result is not None,
+        achievement_id=achievement_id,
+    )
+
+
+@app.get("/users/me/achievements", response_model=list[AchievementOut])
+def get_my_achievements(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return all achievements earned by the current user."""
+    return crud.get_user_achievements(db, current_user.id)
+
+
+@app.get("/users/me/achievements/unseen", response_model=UnseenAchievementsResponse)
+def get_unseen_achievements(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return achievements that haven't been shown as a popup yet."""
+    items = crud.get_unseen_achievements(db, current_user.id)
+    return UnseenAchievementsResponse(achievements=items)
+
+
+@app.post("/users/me/achievements/seen", status_code=status.HTTP_204_NO_CONTENT)
+def mark_achievements_seen(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Mark all unseen achievements as seen (called after toast is shown)."""
+    crud.mark_achievements_seen(db, current_user.id)
+
+
 # ==================== Run Information ====================
 if __name__ == "__main__":
-    print("Run the server with: uvicorn main:app --reload")
+    print("Run the server with:  cd backend && uvicorn app.main:app --reload")

@@ -1,9 +1,9 @@
 # CRUD operations - Database Create, Read, Update, Delete operations
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models import User, Lesson, UserProgress
-from schemas import UserRegister, LessonCreate
-from auth import hash_password, verify_password
+from .models import User, Lesson, UserProgress, Achievement, UserAchievement
+from .schemas import UserRegister, LessonCreate
+from .auth import hash_password, verify_password
 from datetime import datetime
 from typing import Optional, List
 import json
@@ -160,19 +160,119 @@ def get_user_lessons_with_progress(db: Session, user_id: int) -> list:
     """Get all lessons with completion status for a user"""
     lessons = db.query(Lesson).all()
     result = []
-    
+
     for lesson in lessons:
-        # Check if user has completed this lesson
         progress = db.query(UserProgress).filter(
             UserProgress.user_id == user_id,
             UserProgress.lesson_id == lesson.id
         ).first()
-        
+
         result.append({
             "id": lesson.id,
             "title": lesson.title,
             "description": lesson.description,
             "completed": progress.completed if progress else False
         })
-    
+
     return result
+
+
+# ==================== Achievement Operations ====================
+
+# Canonical achievement catalogue (id, title_ru, title_uz, icon, xp, category)
+ACHIEVEMENTS_CATALOG = [
+    ("first_lab",    "Первый опыт",              "Birinchi tajriba",        "🧪", 15, "lab"),
+    ("volcano",      "Вулканолог",               "Vulqonshunos",            "🌋", 35, "lab"),
+    ("color_magic",  "Алхимик",                  "Alkimyogar",              "🎨", 25, "lab"),
+    ("neutralizer",  "Нейтрализатор",            "Neytralizator",           "⚗️", 20, "lab"),
+    ("danger_zone",  "Отважный химик",           "Jasur kimyogar",          "💥", 40, "lab"),
+    ("table_open",   "Исследователь атомов",     "Atom tadqiqotchisi",      "⚛️", 10, "general"),
+    ("mol_h2o",      "Вода жизни",               "Hayot suvi",              "💧", 20, "molecule"),
+    ("mol_co2",      "Дыхание планеты",          "Sayyora nafasi",          "🌿", 20, "molecule"),
+    ("mol_nacl",     "Химия вкуса",              "Ta'm kimyosi",            "🧂", 15, "molecule"),
+    ("mol_nh3",      "Запах аммиака",            "Ammiak hidi",             "💨", 25, "molecule"),
+    ("mol_o2",       "Молекула жизни",           "Hayot molekulasi",        "🫁", 15, "molecule"),
+    ("quest_detective", "Детектив лаборатории",  "Laboratoriya detektivi",  "🔍", 50, "quest"),
+    ("quest_volcano",   "Вулкан для ярмарки",    "Yarmarqa vulqoni",        "🌋", 40, "quest"),
+    ("quest_emergency", "Спасатель",             "Qutqaruvchi",             "🚨", 60, "quest"),
+    ("first_lesson", "Первый урок",              "Birinchi dars",           "📚", 10, "general"),
+    ("lesson_5",     "5 уроков пройдено",        "5 ta dars o'tildi",       "🎓", 30, "general"),
+    ("xp_100",       "100 XP!",                  "100 XP!",                 "⭐",  0, "general"),
+    ("xp_500",       "500 XP — эксперт!",        "500 XP — ekspert!",       "🌟",  0, "general"),
+]
+
+
+def seed_achievements(db: Session) -> None:
+    """Populate achievement catalogue on first startup (idempotent)."""
+    if db.query(Achievement).count() > 0:
+        return
+    for id_, title_ru, title_uz, icon, xp, cat in ACHIEVEMENTS_CATALOG:
+        db.add(Achievement(
+            id=id_, title_ru=title_ru, title_uz=title_uz,
+            icon=icon, xp_reward=xp, category=cat,
+        ))
+    db.commit()
+
+
+def grant_achievement(db: Session, user_id: int, achievement_id: str) -> UserAchievement | None:
+    """
+    Grant an achievement to a user.  Idempotent — returns None if already owned.
+    Automatically adds xp_reward to user.xp.
+    """
+    already = db.query(UserAchievement).filter_by(
+        user_id=user_id, achievement_id=achievement_id
+    ).first()
+    if already:
+        return None
+
+    achievement = db.query(Achievement).filter_by(id=achievement_id).first()
+    if not achievement:
+        return None
+
+    ua = UserAchievement(user_id=user_id, achievement_id=achievement_id)
+    db.add(ua)
+
+    if achievement.xp_reward:
+        user = get_user_by_id(db, user_id)
+        if user:
+            user.xp = max(0, user.xp + achievement.xp_reward)
+
+    db.commit()
+    db.refresh(ua)
+    return ua
+
+
+def get_user_achievements(db: Session, user_id: int) -> list[UserAchievement]:
+    """All achievements earned by a user (with achievement data joined)."""
+    return (
+        db.query(UserAchievement)
+        .filter_by(user_id=user_id)
+        .join(Achievement)
+        .all()
+    )
+
+
+def get_unseen_achievements(db: Session, user_id: int) -> list[UserAchievement]:
+    """Achievements earned but not yet shown as a popup."""
+    return (
+        db.query(UserAchievement)
+        .filter_by(user_id=user_id, seen=False)
+        .join(Achievement)
+        .all()
+    )
+
+
+def mark_achievements_seen(db: Session, user_id: int) -> None:
+    db.query(UserAchievement).filter_by(user_id=user_id, seen=False).update({"seen": True})
+    db.commit()
+
+
+def check_xp_milestones(db: Session, user_id: int) -> None:
+    """Auto-grant XP milestone achievements after any XP update."""
+    user = get_user_by_id(db, user_id)
+    if not user:
+        return
+    if user.xp >= 100:
+        grant_achievement(db, user_id, "xp_100")
+    if user.xp >= 500:
+        grant_achievement(db, user_id, "xp_500")

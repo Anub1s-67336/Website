@@ -171,3 +171,41 @@ export async function updateXP(xp) {
 export async function getLeaderboard(limit = 10) {
   return request('GET', `/leaderboard?limit=${limit}`)
 }
+
+// ── Achievement endpoints ─────────────────────────────────────────
+
+/**
+ * Grant an achievement to the current user.
+ * POST /users/me/achievements/{id}
+ * Returns: { granted: bool, achievement_id: string }
+ * Idempotent — safe to call multiple times for the same achievement.
+ */
+export async function earnAchievementApi(achievementId) {
+  return request('POST', `/users/me/achievements/${encodeURIComponent(achievementId)}`)
+}
+
+/**
+ * Get all achievements earned by the current user.
+ * GET /users/me/achievements
+ * Returns: [{ id, title_ru, title_uz, icon, xp_reward, category, earned_at, seen }]
+ */
+export async function getMyAchievements() {
+  return request('GET', '/users/me/achievements')
+}
+
+/**
+ * Get achievements not yet shown as a popup.
+ * GET /users/me/achievements/unseen
+ * Returns: { achievements: [...] }
+ */
+export async function getUnseenAchievements() {
+  return request('GET', '/users/me/achievements/unseen')
+}
+
+/**
+ * Mark all unseen achievements as seen.
+ * POST /users/me/achievements/seen
+ */
+export async function markAchievementsSeen() {
+  return request('POST', '/users/me/achievements/seen')
+}

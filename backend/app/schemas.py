@@ -91,3 +91,30 @@ class UserProgressUpdateRequest(BaseModel):
     xp_delta: Optional[int] = 0       # relative XP increment
     xp_total: Optional[int] = None    # absolute XP override (used by updateXP)
     medals: Optional[list[str]] = None
+
+
+# ==================== Achievement Schemas ====================
+
+class AchievementOut(BaseModel):
+    """Schema for a single achievement in a user's collection"""
+    id:          str
+    title_ru:    str
+    title_uz:    str
+    description: str
+    icon:        str
+    xp_reward:   int
+    category:    str
+    earned_at:   datetime
+    seen:        bool
+
+    class Config:
+        from_attributes = True
+
+class UnseenAchievementsResponse(BaseModel):
+    """List of achievements not yet shown to the user"""
+    achievements: list[AchievementOut]
+
+class GrantAchievementResponse(BaseModel):
+    """Response after granting an achievement"""
+    granted:        bool     # False if already owned
+    achievement_id: str
