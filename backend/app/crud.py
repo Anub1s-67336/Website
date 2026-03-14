@@ -34,12 +34,12 @@ def create_user(db: Session, user: UserRegister) -> User:
     if get_user_by_email(db, user.email):
         raise ClientError("Email already registered")
 
-    # Hash the password before saving, handle too-long passwords gracefully
+    # Hash the password before saving; convert ValueError to ClientError so the
+    # HTTP layer returns 400 (not 500) for any invalid-password errors.
     try:
         hashed_password = hash_password(user.password)
-    except ValueError:
-        # propagate so route returns 400 instead of 500
-        raise
+    except ValueError as e:
+        raise ClientError(str(e))
     
     # Create new user object
     db_user = User(
@@ -187,11 +187,6 @@ ACHIEVEMENTS_CATALOG = [
     ("neutralizer",  "Нейтрализатор",            "Neytralizator",           "⚗️", 20, "lab"),
     ("danger_zone",  "Отважный химик",           "Jasur kimyogar",          "💥", 40, "lab"),
     ("table_open",   "Исследователь атомов",     "Atom tadqiqotchisi",      "⚛️", 10, "general"),
-    ("mol_h2o",      "Вода жизни",               "Hayot suvi",              "💧", 20, "molecule"),
-    ("mol_co2",      "Дыхание планеты",          "Sayyora nafasi",          "🌿", 20, "molecule"),
-    ("mol_nacl",     "Химия вкуса",              "Ta'm kimyosi",            "🧂", 15, "molecule"),
-    ("mol_nh3",      "Запах аммиака",            "Ammiak hidi",             "💨", 25, "molecule"),
-    ("mol_o2",       "Молекула жизни",           "Hayot molekulasi",        "🫁", 15, "molecule"),
     ("quest_detective", "Детектив лаборатории",  "Laboratoriya detektivi",  "🔍", 50, "quest"),
     ("quest_volcano",   "Вулкан для ярмарки",    "Yarmarqa vulqoni",        "🌋", 40, "quest"),
     ("quest_emergency", "Спасатель",             "Qutqaruvchi",             "🚨", 60, "quest"),

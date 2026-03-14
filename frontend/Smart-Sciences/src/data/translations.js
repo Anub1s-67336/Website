@@ -5,7 +5,7 @@
 export const T = {
   RU: {
     appSub: 'Химия внутри нас 🧬',
-    nav: ['Главная', 'Тело', 'Лаборатория', '⚛️ Таблица', '🧬 Молекулы', '⚡ Электроны', 'Достижения', 'Карьера', 'Основы химии'],
+    nav: ['Главная', 'Тело', 'Лаборатория', '⚛️ Таблица', '⚡ Электроны', 'Достижения', 'Карьера', 'Основы химии'],
     xpLabel: 'очков', levelLabel: 'Уровень', juniorChem: 'Юный химик',
     toNextLevel: 'до след. уровня', topicsTitle: '🔬 Темы для изучения',
     openLab: '🧪 Открыть Лабораторию', contact: '📬 Связаться с разработчиками',
@@ -55,7 +55,6 @@ export const T = {
       tutorial:     'Добро пожаловать! Давай я покажу тебе Smart-Sciences! 🤖',
       chembasics:   '⚗️ Начнём урок по основам химии — науки обо всём вокруг нас!',
       table:        '⚛️ Изучи периодическую таблицу — нажми на элемент, чтобы увидеть его атом!',
-      molecule:     '🧬 Расставь атомы по слотам и соедини их связями. Удачи, химик!',
     },
     organs: {
       brain:     { name: 'Мозг',     info: 'Нейроны работают на глюкозе. Мозг потребляет 20% всей энергии тела!',         snd: 'think'   },
@@ -240,7 +239,7 @@ export const T = {
 
   UZ: {
     appSub: 'Ichimizda kimyo 🧬',
-    nav: ['Bosh sahifa', 'Tana', 'Laboratoriya', '⚛️ Jadval', '🧬 Molekulalar', '⚡ Elektronlar', 'Yutuqlar', 'Karyera', 'Kimyo asoslari'],
+    nav: ['Bosh sahifa', 'Tana', 'Laboratoriya', '⚛️ Jadval', '⚡ Elektronlar', 'Yutuqlar', 'Karyera', 'Kimyo asoslari'],
     xpLabel: 'ball', levelLabel: 'Daraja', juniorChem: 'Yosh kimyogar',
     toNextLevel: 'keyingi darajagacha', topicsTitle: '🔬 O\'rganish mavzulari',
     openLab: '🧪 Laboratoriyani ochish', contact: '📬 Ishlab chiquvchilar bilan bog\'laning',
@@ -290,7 +289,6 @@ export const T = {
       tutorial:     'Xush kelibsiz! Keling, Smart-Sciencesni birga ko\'raylik! 🤖',
       chembasics:   '⚗️ Kimyo asoslari darsini boshlaymiz — atrofimizdagi hamma narsa haqidagi fan!',
       table:        '⚛️ Davriy jadvalni o\'rgan — elementni bosib uning atomini ko\'r!',
-      molecule:     '🧬 Atomlarni slotlarga joylashtir va ularni bog\'lar bilan ul. Omad!',
     },
     organs: {
       brain:     { name: 'Miya',       info: 'Neyronlar glyukozada ishlaydi. Miya tana energiyasining 20% ni sarflaydi!',    snd: 'think'   },

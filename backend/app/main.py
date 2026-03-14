@@ -20,6 +20,10 @@ from .models import User, Achievement, UserAchievement  # noqa: F401 — registe
 from .config import settings
 from .auth import create_access_token, verify_token
 from . import crud
+
+# AI routers
+from .routers import chat as chat_router
+from .routers import quiz as quiz_router
 from .schemas import (
     UserRegister, UserLogin, UserResponse, TokenResponse,
     LessonCreate, LessonResponse,
@@ -49,6 +53,10 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(title="Learning Platform API", version="1.0.0", lifespan=lifespan)
+
+# AI feature routers
+app.include_router(chat_router.router)
+app.include_router(quiz_router.router)
 
 # ==================== CORS Configuration ====================
 # Wildcard origins for development — no credentials mode needed since
@@ -168,22 +176,11 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     - **email**: Valid email address
     - **password**: Plain text password (will be hashed)
     """
-    # Ensure password byte-length fits bcrypt limit (72 bytes)
-    if len(user.password.encode("utf-8")) > 72:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password too long (max 72 bytes). Choose a shorter password."
-        )
-
-    # attempt creation with centralized validations in CRUD layer
-    # only ClientError exceptions represent genuine client mistakes
-    # (duplicate username/email).  We intentionally avoid catching
-    # generic ValueError so that unexpected failures (e.g. bcrypt bugs)
-    # propagate as 500 errors.
+    # All validation (including 72-byte limit) is handled inside crud.create_user
+    # and surfaces as ClientError → 400.
     try:
         db_user = crud.create_user(db, user)
     except crud.ClientError as ce:
-        # convert known client-side errors into 400 responses
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ce))
 
     return db_user

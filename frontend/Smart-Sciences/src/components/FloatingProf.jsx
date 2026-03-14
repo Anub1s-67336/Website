@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export function FloatingProf({ msg, happy = false }) {
+export function FloatingProf({ msg, happy = false, onChatOpen }) {
   const [blink, setBlink] = useState(false)
   const [open,  setOpen]  = useState(true)
 
@@ -71,7 +71,7 @@ export function FloatingProf({ msg, happy = false }) {
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        onClick={() => setOpen(v => !v)}
+        onClick={() => onChatOpen ? onChatOpen() : setOpen(v => !v)}
         style={{ flexShrink: 0, cursor: 'pointer', pointerEvents: 'auto' }}
       >
         <div style={{

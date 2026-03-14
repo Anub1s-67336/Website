@@ -34,8 +34,8 @@ import { LessonScreen }   from './screens/LessonScreen.jsx'
 import { IntroLesson }      from './screens/IntroLesson.jsx'
 import { ChemBasicsLesson } from './screens/ChemBasicsLesson.jsx'
 import { PeriodicTable }    from './screens/PeriodicTable.jsx'
-import { MoleculeBuilder }  from './screens/MoleculeBuilder.jsx'
 import { AchievementToast } from './components/AchievementToast.jsx'
+import { ProfessorChat }    from './components/ProfessorChat.jsx'
 
 // ─────────────────────────────────────────────────────────────────
 
@@ -50,6 +50,7 @@ export default function App() {
   const [profHappy,    setProfHappy]    = useState(false)
   const [showContact,  setShowContact]  = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
+  const [showChat,     setShowChat]     = useState(false)
   const [introDone,    setIntroDone]    = useState(() => !!localStorage.getItem('ss_intro_done'))
 
   const t = T[lang]
@@ -74,7 +75,6 @@ export default function App() {
       lesson:     'home',       // professor message handled inside LessonScreen
       chembasics: 'chembasics',
       table:      'table',
-      molecule:   'molecule',
     }
     setProfMsg(t.prof[map[screen] ?? 'home'])
   }, [screen, lang])
@@ -201,9 +201,7 @@ export default function App() {
                 setLesson={setCurrentLesson}
               />
             )}
-            {screen === 'molecule' && (
-              <MoleculeBuilder {...screenProps} />
-            )}
+
           </main>
         </div>
 
@@ -218,7 +216,20 @@ export default function App() {
       <AchievementToast />
 
       {/* Floating Professor Atom (fixed top-right) */}
-      <FloatingProf msg={profMsg || t.prof.home} happy={profHappy} />
+      <FloatingProf
+        msg={profMsg || t.prof.home}
+        happy={profHappy}
+        onChatOpen={() => setShowChat(v => !v)}
+      />
+
+      {/* Professor Atom AI chat */}
+      {showChat && user && (
+        <ProfessorChat
+          lang={lang}
+          screen={screen}
+          onClose={() => setShowChat(false)}
+        />
+      )}
 
       {/* Tutorial overlay */}
       <AnimatePresence>

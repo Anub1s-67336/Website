@@ -166,6 +166,16 @@ input  { font-family: 'Nunito', sans-serif; }
   to   { transform: rotate(360deg) translateX(-96px) rotate(-360deg); }
 }
 
+/* ── Professor Atom chat animations ────────────────────────────── */
+@keyframes chatSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 /* ── Achievement toast animations ──────────────────────────────── */
 @keyframes toastSlideIn {
   from { opacity: 0; transform: translateX(60px) scale(0.94); }
