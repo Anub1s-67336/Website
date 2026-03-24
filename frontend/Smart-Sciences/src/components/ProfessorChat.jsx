@@ -1,270 +1,280 @@
 /**
- * ProfessorChat.jsx — AI-чат с Профессором Атомом.
- * Открывается кликом на персонажа FloatingProf.
- * Стриминг через SSE: data: {"delta": "..."} / data: [DONE]
+ * ProfessorChat.jsx — Professor Atom chat (KEYWORD-BASED, no API calls).
+ * Receives subject ('physics' | 'chemistry') to pick the right FAQ.
+ * Falls back to FALLBACK_RESPONSES if no keyword matches.
  */
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { getToken, API_URL } from '../api/api'
+import { matchProfessorResponse } from '../data/professorFAQ.js'
 
-export function ProfessorChat({ lang, screen, onClose }) {
-  const greeting = lang === 'RU'
-    ? 'Привет, юный химик! ⚛️ Я Профессор Атом — задавай вопросы, я помогу разобраться!'
-    : 'Salom, yosh kimyogar! ⚛️ Men Professor Atom — savol ber, tushunishga yordam beraman!'
+// Typing animation delay (ms per character)
+const TYPING_SPEED = 18
+
+// Subject-specific greeting
+function getGreeting(subject, lang) {
+  if (subject === 'physics') {
+    return lang === 'UZ'
+      ? "Salom, yosh fizik! ⚡ Men Professor Atom — savol ber, fizika sirlarini ochaman!"
+      : "Привет, юный физик! ⚡ Я Профессор Атом — задавай вопросы о токе, силах, свете!"
+  }
+  return lang === 'UZ'
+    ? "Salom, yosh kimyogar! ⚛️ Men Professor Atom — savol ber, kimyo sirlarini ochaman!"
+    : "Привет, юный химик! ⚛️ Я Профессор Атом — спроси об атомах, реакциях, молекулах!"
+}
+
+// Subject accent color
+const ACCENT = { physics: '#60a5fa', chemistry: '#a78bfa' }
+
+export function ProfessorChat({ subject = 'chemistry', lang = 'RU', onClose }) {
+  const greeting = getGreeting(subject, lang)
+  const accent   = ACCENT[subject] || '#a78bfa'
 
   const [messages,  setMessages]  = useState([{ role: 'assistant', content: greeting }])
   const [input,     setInput]     = useState('')
-  const [streaming, setStreaming] = useState(false)
+  const [typing,    setTyping]    = useState(false)
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
-  const abortRef  = useRef(null)
+  const timerRef  = useRef(null)
 
-  // Автоскролл к последнему сообщению
+  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Фокус на инпут при открытии
+  // Focus input on open
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 100)
+    setTimeout(() => inputRef.current?.focus(), 120)
+    return () => clearTimeout(timerRef.current)
   }, [])
 
-  // Отмена стрима при закрытии
-  useEffect(() => () => abortRef.current?.abort(), [])
-
-  const sendMessage = useCallback(async () => {
-    const text = input.trim()
-    if (!text || streaming) return
-
-    const userMsg  = { role: 'user',      content: text }
-    const nextMsgs = [...messages, userMsg]
-    setMessages(nextMsgs)
-    setInput('')
-    setStreaming(true)
-
-    // Добавляем пустое сообщение ассистента — заполним потоком
+  // Animated typing effect for Professor's response
+  const typeResponse = useCallback((response) => {
+    setTyping(true)
+    // Add empty assistant message
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
-    const controller = new AbortController()
-    abortRef.current = controller
-
-    try {
-      const res = await fetch(`${API_URL}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          messages: nextMsgs,
-          screen_context: screen,
-          lang,
-        }),
-      })
-
-      if (!res.ok || !res.body) {
-        throw new Error(`HTTP ${res.status}`)
+    let charIdx = 0
+    const step = () => {
+      if (charIdx >= response.length) {
+        setTyping(false)
+        return
       }
-
-      const reader  = res.body.getReader()
-      const decoder = new TextDecoder()
-      let   buffer  = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''   // неполная строка — откладываем
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const payload = line.slice(6).trim()
-          if (payload === '[DONE]') break
-
-          try {
-            const { delta, error } = JSON.parse(payload)
-            if (error) throw new Error(error)
-            if (delta) {
-              setMessages(prev => {
-                const updated = [...prev]
-                updated[updated.length - 1] = {
-                  role:    'assistant',
-                  content: updated[updated.length - 1].content + delta,
-                }
-                return updated
-              })
-            }
-          } catch { /* пропускаем битые чанки */ }
-        }
-      }
-    } catch (err) {
-      if (err.name === 'AbortError') return
+      charIdx++
       setMessages(prev => {
         const updated = [...prev]
-        const last    = updated[updated.length - 1]
-        if (last.role === 'assistant' && !last.content) {
-          updated[updated.length - 1] = {
-            role:    'assistant',
-            content: lang === 'RU' ? '⚠️ Ошибка связи. Попробуй позже.' : '⚠️ Aloqa xatosi. Keyinroq urinib ko\'r.',
-          }
+        updated[updated.length - 1] = {
+          role: 'assistant',
+          content: response.slice(0, charIdx),
         }
         return updated
       })
-    } finally {
-      setStreaming(false)
-      abortRef.current = null
-      inputRef.current?.focus()
+      timerRef.current = setTimeout(step, TYPING_SPEED)
     }
-  }, [input, messages, streaming, screen, lang])
+    step()
+  }, [])
+
+  const sendMessage = useCallback(() => {
+    const text = input.trim()
+    if (!text || typing) return
+
+    setMessages(prev => [...prev, { role: 'user', content: text }])
+    setInput('')
+
+    // Small pause before professor "types"
+    setTimeout(() => {
+      const response = matchProfessorResponse(text, subject)
+      typeResponse(response)
+    }, 350)
+  }, [input, typing, subject, typeResponse])
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
   const clearHistory = () => {
+    clearTimeout(timerRef.current)
+    setTyping(false)
     setMessages([{ role: 'assistant', content: greeting }])
   }
 
+  // Suggested quick questions
+  const SUGGESTIONS = subject === 'physics'
+    ? ['Что такое ток?', 'Закон Ньютона', 'Как работает линза?', 'Что такое давление?']
+    : ['Что такое атом?', 'Закон Ома', 'Что такое реакция?', 'Таблица Менделеева']
+
   return (
-    <div style={{
-      position: 'fixed', bottom: 100, right: 16,
-      width: 340, height: 480,
-      background: 'rgba(8,8,24,0.97)',
-      border: '1px solid rgba(124,58,237,0.45)',
-      borderRadius: 18,
-      display: 'flex', flexDirection: 'column',
-      boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 0 32px rgba(124,58,237,0.15)',
-      zIndex: 600,
-      backdropFilter: 'blur(20px)',
-      animation: 'chatSlideUp 0.25s ease-out',
-    }}>
+    <>
+      {/* CSS for animations */}
+      <style>{`
+        @keyframes chatSlideUp {
+          from { opacity: 0; transform: translateY(20px) scale(.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes cursorBlink {
+          0%, 100% { opacity: 1; } 50% { opacity: 0; }
+        }
+        @keyframes dotPulse {
+          0%, 60%, 100% { transform: scaleY(1); }
+          30% { transform: scaleY(1.8); }
+        }
+      `}</style>
 
-      {/* ── Header ── */}
       <div style={{
-        padding: '11px 14px',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0,
+        position: 'fixed', bottom: 100, right: 16,
+        width: 340, height: 490,
+        background: 'rgba(6,7,25,0.97)',
+        border: `1px solid rgba(${subject === 'physics' ? '59,130,246' : '124,58,237'},0.4)`,
+        borderRadius: 20,
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '0 12px 48px rgba(0,0,0,0.75)',
+        zIndex: 600,
+        backdropFilter: 'blur(20px)',
+        animation: 'chatSlideUp 0.22s ease-out',
+        overflow: 'hidden',
       }}>
-        {/* Мини-аватар */}
+
+        {/* ── Header ── */}
         <div style={{
-          width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-          background: 'radial-gradient(circle at 35% 30%, #7c3aed, #4c1d95)',
-          boxShadow: '0 0 12px rgba(124,58,237,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14,
-        }}>⚛️</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ color: '#c4b5fd', fontWeight: 700, fontSize: 13 }}>
-            {lang === 'RU' ? 'Профессор Атом' : 'Professor Atom'}
-          </div>
-          <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>
-            {streaming
-              ? (lang === 'RU' ? '✍️ печатает...' : '✍️ yozmoqda...')
-              : (lang === 'RU' ? '● онлайн' : '● online')}
-          </div>
-        </div>
-        {/* Очистить историю */}
-        <button
-          onClick={clearHistory}
-          title={lang === 'RU' ? 'Очистить чат' : 'Chatni tozalash'}
-          style={{
-            background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)',
-            cursor: 'pointer', fontSize: 14, padding: '2px 5px', borderRadius: 4,
-          }}
-        >🗑</button>
-        {/* Закрыть */}
-        <button
-          onClick={onClose}
-          style={{
-            background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)',
-            cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '0 2px',
-          }}
-        >×</button>
-      </div>
+          padding: '11px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0,
+          background: `linear-gradient(90deg, rgba(${subject === 'physics' ? '59,130,246' : '124,58,237'},0.12) 0%, transparent 100%)`,
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+            background: subject === 'physics'
+              ? 'radial-gradient(circle at 35% 30%, #1d4ed8, #ea580c)'
+              : 'radial-gradient(circle at 35% 30%, #7c3aed, #4c1d95)',
+            boxShadow: `0 0 14px ${accent}60`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 14,
+          }}>⚛️</div>
 
-      {/* ── Messages ── */}
-      <div style={{
-        flex: 1, overflowY: 'auto', padding: '10px 12px',
-        display: 'flex', flexDirection: 'column', gap: 8,
-        scrollbarWidth: 'thin',
-        scrollbarColor: 'rgba(124,58,237,0.3) transparent',
-      }}>
-        {messages.map((msg, i) => {
-          const isUser = msg.role === 'user'
-          const isLastStreaming = streaming && i === messages.length - 1 && !isUser
-          return (
-            <div
-              key={i}
-              style={{
-                alignSelf:  isUser ? 'flex-end' : 'flex-start',
-                maxWidth:   '86%',
-                background: isUser
-                  ? 'linear-gradient(135deg,rgba(99,102,241,0.35),rgba(139,92,246,0.25))'
-                  : 'rgba(255,255,255,0.06)',
-                border: `1px solid ${isUser ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                padding: '8px 11px',
-                fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 1.55,
-                wordBreak: 'break-word',
-              }}
-            >
-              {msg.content}
-              {isLastStreaming && (
-                <span style={{
-                  display: 'inline-block', width: 8, height: 14,
-                  background: '#a78bfa', marginLeft: 2, borderRadius: 2,
-                  animation: 'cursorBlink 0.7s step-end infinite',
-                  verticalAlign: 'middle',
-                }} />
-              )}
+          <div style={{ flex: 1 }}>
+            <div style={{ color: accent, fontWeight: 800, fontSize: 13 }}>
+              Профессор Атом
             </div>
-          )
-        })}
-        <div ref={bottomRef} />
-      </div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>
+              {typing ? '✍️ печатает...' : `● ${subject === 'physics' ? 'Физика' : 'Химия'}`}
+            </div>
+          </div>
 
-      {/* ── Input ── */}
-      <div style={{
-        padding: '9px 10px',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex', gap: 8, flexShrink: 0,
-      }}>
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKey}
-          rows={1}
-          disabled={streaming}
-          placeholder={lang === 'RU' ? 'Задай вопрос... (Enter — отправить)' : 'Savol ber... (Enter — yuborish)'}
-          style={{
-            flex: 1, resize: 'none', overflow: 'hidden',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 10, padding: '7px 10px',
-            color: '#fff', fontSize: 13, outline: 'none',
-            fontFamily: 'inherit', lineHeight: 1.4,
-            opacity: streaming ? 0.5 : 1,
-          }}
-        />
-        <button
-          onClick={sendMessage}
-          disabled={streaming || !input.trim()}
-          style={{
-            flexShrink: 0,
-            background: streaming || !input.trim()
-              ? 'rgba(99,102,241,0.25)'
-              : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-            border: 'none', borderRadius: 10, padding: '7px 14px',
-            color: '#fff', cursor: streaming || !input.trim() ? 'not-allowed' : 'pointer',
-            fontSize: 16, transition: 'all 0.2s',
-          }}
-        >
-          {streaming ? '⋯' : '➤'}
-        </button>
+          <button
+            onClick={clearHistory}
+            title="Очистить чат"
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 14, padding: '2px 5px' }}
+          >🗑</button>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 21, lineHeight: 1, padding: '0 2px' }}
+          >×</button>
+        </div>
+
+        {/* ── Messages ── */}
+        <div style={{
+          flex: 1, overflowY: 'auto', padding: '10px 12px',
+          display: 'flex', flexDirection: 'column', gap: 8,
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${accent}40 transparent`,
+        }}>
+          {messages.map((msg, i) => {
+            const isUser = msg.role === 'user'
+            const isLastTyping = typing && i === messages.length - 1 && !isUser
+            return (
+              <div key={i} style={{
+                alignSelf: isUser ? 'flex-end' : 'flex-start',
+                maxWidth: '86%',
+                background: isUser
+                  ? `linear-gradient(135deg, rgba(${subject === 'physics' ? '37,99,235' : '99,102,241'},0.35), rgba(${subject === 'physics' ? '234,88,12' : '139,92,246'},0.2))`
+                  : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${isUser ? `${accent}40` : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                padding: '8px 11px',
+                fontSize: 13, color: 'rgba(255,255,255,0.88)', lineHeight: 1.55,
+                wordBreak: 'break-word',
+              }}>
+                {msg.content}
+                {isLastTyping && (
+                  <span style={{
+                    display: 'inline-block', width: 8, height: 14,
+                    background: accent, marginLeft: 2, borderRadius: 2,
+                    animation: 'cursorBlink 0.7s step-end infinite',
+                    verticalAlign: 'middle',
+                  }} />
+                )}
+              </div>
+            )
+          })}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* ── Quick suggestions ── */}
+        {messages.length <= 2 && !typing && (
+          <div style={{
+            padding: '6px 12px 0',
+            display: 'flex', flexWrap: 'wrap', gap: 5,
+          }}>
+            {SUGGESTIONS.map(s => (
+              <button
+                key={s}
+                onClick={() => { setInput(s); setTimeout(sendMessage, 50) }}
+                style={{
+                  padding: '4px 10px', borderRadius: 8, border: `1px solid ${accent}30`,
+                  background: `${accent}10`, color: accent,
+                  fontSize: 11, fontFamily: 'inherit', cursor: 'pointer', fontWeight: 700,
+                  transition: 'all .15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = `${accent}20`}
+                onMouseLeave={e => e.currentTarget.style.background = `${accent}10`}
+              >{s}</button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Input ── */}
+        <div style={{
+          padding: '9px 10px',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          display: 'flex', gap: 8, flexShrink: 0,
+        }}>
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            rows={1}
+            disabled={typing}
+            placeholder="Задай вопрос... (Enter — отправить)"
+            style={{
+              flex: 1, resize: 'none', overflow: 'hidden',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 10, padding: '7px 10px',
+              color: '#fff', fontSize: 13, outline: 'none',
+              fontFamily: 'inherit', lineHeight: 1.4,
+              opacity: typing ? 0.5 : 1,
+            }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={typing || !input.trim()}
+            style={{
+              flexShrink: 0,
+              background: typing || !input.trim()
+                ? 'rgba(255,255,255,0.08)'
+                : subject === 'physics'
+                  ? 'linear-gradient(135deg,#2563eb,#ea580c)'
+                  : 'linear-gradient(135deg,#7c3aed,#059669)',
+              border: 'none', borderRadius: 10, padding: '7px 14px',
+              color: typing || !input.trim() ? 'rgba(255,255,255,0.3)' : '#fff',
+              cursor: typing || !input.trim() ? 'not-allowed' : 'pointer',
+              fontSize: 16, transition: 'all 0.2s',
+            }}
+          >
+            {typing ? '⋯' : '➤'}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

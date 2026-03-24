@@ -145,6 +145,7 @@ export const NAV = [
   { id: 'medals',     icon: '🏆' },
   { id: 'roadmap',    icon: '🗺' },
   { id: 'chembasics', icon: '⚗️' },
+  { id: 'physics',    icon: '🔭' },  // Модуль 2: Физика
 ]
 
 // ── Achievement catalogue (mirrors backend ACHIEVEMENTS_CATALOG) ─
@@ -163,4 +164,10 @@ export const ACHIEVEMENT_DEF = [
   { id: 'lesson_5',       icon: '🎓', titleRU: '5 уроков пройдено',        titleUZ: '5 ta dars o\'tildi',      xp: 30 },
   { id: 'xp_100',         icon: '⭐', titleRU: '100 XP!',                  titleUZ: '100 XP!',                 xp:  0 },
   { id: 'xp_500',         icon: '🌟', titleRU: '500 XP — эксперт!',        titleUZ: '500 XP — ekspert!',       xp:  0 },
+  // ── Physics achievements ──────────────────────────────────────
+  { id: 'phys_first',      icon: '⚛️', titleRU: 'Юный физик',        titleUZ: 'Yosh fizik',         xp: 15 },
+  { id: 'phys_circuits',   icon: '⚡', titleRU: 'Электротехник',     titleUZ: 'Elektrotexnik',      xp: 30 },
+  { id: 'phys_trajectory', icon: '🎯', titleRU: 'Меткий стрелок',   titleUZ: 'Aniq nishonchi',     xp: 25 },
+  { id: 'phys_newton',     icon: '🍎', titleRU: 'Знаток Ньютона',   titleUZ: 'Nyuton bilimdonі',   xp: 35 },
+  { id: 'phys_master',     icon: '🔭', titleRU: 'Мастер физики',    titleUZ: 'Fizika ustasi',      xp: 50 },
 ]

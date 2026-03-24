@@ -24,7 +24,9 @@
       "Bash(find c:UsersAdminDesktopWebsitefrontendSmart-Sciencessrc -type f -name *.js -o -name *.jsx -o -name *.ts -o -name *.tsx -o -name *.vue)",
       "Bash(find c:UsersAdminDesktopWebsitefrontendSmart-Sciences -type f \\\\\\(-name *.svg -o -name *.png -o -name *.jpg -o -name *.jpeg \\\\\\))",
       "Skill(claude-api)",
-      "Skill(claude-api:*)"
+      "Skill(claude-api:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

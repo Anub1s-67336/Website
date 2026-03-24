@@ -24,6 +24,7 @@ from . import crud
 # AI routers
 from .routers import chat as chat_router
 from .routers import quiz as quiz_router
+from .routers import physics as physics_router
 from .schemas import (
     UserRegister, UserLogin, UserResponse, TokenResponse,
     LessonCreate, LessonResponse,
@@ -45,6 +46,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         crud.seed_achievements(db)
+        crud.seed_physics_achievements(db)
+        crud.seed_physics_lessons(db)
     finally:
         db.close()
     logger.info("Database tables ready.")
@@ -57,6 +60,7 @@ app = FastAPI(title="Learning Platform API", version="1.0.0", lifespan=lifespan)
 # AI feature routers
 app.include_router(chat_router.router)
 app.include_router(quiz_router.router)
+app.include_router(physics_router.router)
 
 # ==================== CORS Configuration ====================
 # Wildcard origins for development — no credentials mode needed since
