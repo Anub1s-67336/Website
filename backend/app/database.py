@@ -8,12 +8,12 @@ from .config import settings
 
 import os
 
-# 1) Use DATABASE_URL if provided (e.g. Railway Postgres)
+# 1) Use DATABASE_URL if provided and not SQLite (e.g. Railway Postgres)
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-if DATABASE_URL:
+if DATABASE_URL and not DATABASE_URL.startswith("sqlite"):
     SQLALCHEMY_DATABASE_URL = DATABASE_URL
 else:
-    # 2) Fallback to in-memory SQLite for Railway (no file issues)
+    # 2) Fallback to in-memory SQLite (ignore any SQLite DATABASE_URL to avoid readonly issues)
     SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 # 4) Engine creation
