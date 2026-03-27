@@ -9,7 +9,28 @@ from .config import settings
 import os
 
 # database URL (can point to sqlite or any other supported backend)
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL or "sqlite:///./app.db")
+DATABASE_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL or "sqlite:///./app.db")
+SQLALCHEMY_DATABASE_URL = DATABASE_URL
+
+# SQLite fallback to /tmp if running on readonly filesystem (Railway containers)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    sqlite_path = SQLALCHEMY_DATABASE_URL.replace("sqlite://", "")
+    if sqlite_path.startswith("/"):
+        sqlite_path = sqlite_path
+    else:
+        sqlite_path = os.path.abspath(sqlite_path)
+
+    target_dir = os.path.dirname(sqlite_path) or "."
+    if not os.access(target_dir, os.W_OK):
+        sqlite_path = "/tmp/app.db"
+        SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
+
+    os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
+    if not os.path.exists(sqlite_path):
+        try:
+            open(sqlite_path, "a").close()
+        except OSError:
+            pass
 
 # Create database engine
 # SQLite requires check_same_thread=False when using threads
@@ -44,7 +65,13 @@ def verify_schema():
         missing = required - existing
         if missing:
             log.warning("DB schema outdated — missing columns %s. Recreating database.", missing)
-            os.remove(db_path)
+            try:
+                if os.access(db_path, os.W_OK):
+                    os.remove(db_path)
+                else:
+                    log.warning("DB file is not writable, skipping remove.")
+            except Exception as rm_err:
+                log.warning("Could not remove DB file to recreate: %s", rm_err)
     except Exception as e:
         log.warning("Schema check failed: %s", e)
 
