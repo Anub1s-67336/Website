@@ -13,33 +13,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 if DATABASE_URL:
     SQLALCHEMY_DATABASE_URL = DATABASE_URL
 else:
-    # 2) Fallback to SQLite absolute path in /tmp for Railway
-    sqlite_path = "/tmp/app.db"
-    SQLALCHEMY_DATABASE_URL = f"sqlite:////{sqlite_path.lstrip('/')}"
-
-# 3) Ensure /tmp/app.db exists for SQLite
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    # sqlite URL absolute path should be sqlite:////tmp/app.db
-    normalized_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:////", "/")
-    if normalized_path.startswith("/"):
-        sqlite_path_on_fs = normalized_path
-    elif normalized_path.startswith("sqlite:///"):
-        sqlite_path_on_fs = normalized_path[len("sqlite:///"):]
-    else:
-        sqlite_path_on_fs = normalized_path
-
-    sqlite_path_on_fs = os.path.abspath(sqlite_path_on_fs)
-
-    os.makedirs(os.path.dirname(sqlite_path_on_fs), exist_ok=True)
-    if not os.path.exists(sqlite_path_on_fs):
-        try:
-            open(sqlite_path_on_fs, "a").close()
-            os.chmod(sqlite_path_on_fs, 0o666)  # Ensure writable
-        except OSError:
-            pass
-
-    # Redefine absolute URL with four slashes
-    SQLALCHEMY_DATABASE_URL = f"sqlite:////{sqlite_path_on_fs.lstrip('/')}"
+    # 2) Fallback to in-memory SQLite for Railway (no file issues)
+    SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 # 4) Engine creation
 connect_args = {}
