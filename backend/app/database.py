@@ -6,17 +6,19 @@ from sqlalchemy.orm import sessionmaker
 # configuration from environment
 from .config import settings
 
+import os
+
 # database URL (can point to sqlite or any other supported backend)
-DATABASE_URL = settings.DATABASE_URL
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL or "sqlite:///./app.db")
 
 # Create database engine
 # SQLite requires check_same_thread=False when using threads
 connect_args = {}
-if DATABASE_URL.startswith("sqlite"):
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    DATABASE_URL,
+    SQLALCHEMY_DATABASE_URL,
     connect_args=connect_args,
 )
 
@@ -26,11 +28,11 @@ def verify_schema():
     import sqlite3, os, logging
     log = logging.getLogger(__name__)
 
-    db_path = DATABASE_URL.replace("sqlite:///", "").replace("sqlite://", "")
+    db_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:///", "").replace("sqlite://", "")
     if not os.path.exists(db_path):
         return  # fresh DB — create_all will handle it
 
-    if not DATABASE_URL.startswith("sqlite"):
+    if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
         return  # skip for non-SQLite
 
     required = {"id", "username", "email", "hashed_password", "xp", "medals_json", "created_at"}
