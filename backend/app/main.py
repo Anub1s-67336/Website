@@ -361,4 +361,4 @@ if __name__ == "__main__":
     # Railway sets $PORT; fallback to 8000 for local run.
     port = int(os.environ.get("PORT", "8000"))
     print(f"Starting server on 0.0.0.0:{port}")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
+    uvicorn.run("backend.app.main:app", host="0.0.0.0", port=port)
