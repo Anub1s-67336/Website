@@ -8,62 +8,58 @@ from .config import settings
 
 import os
 
-# database URL (can point to sqlite or any other supported backend)
-DATABASE_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL or "sqlite:///./app.db")
-SQLALCHEMY_DATABASE_URL = DATABASE_URL
+# 1) Use DATABASE_URL if provided (e.g. Railway Postgres)
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+if DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+else:
+    # 2) Fallback to SQLite absolute path in /tmp for Railway
+    sqlite_path = "/tmp/app.db"
+    SQLALCHEMY_DATABASE_URL = f"sqlite:////{sqlite_path.lstrip('/')}"
 
-# SQLite fallback to /tmp if running on readonly filesystem (Railway containers)
+# 3) Ensure /tmp/app.db exists for SQLite
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///"):
-        sqlite_path = SQLALCHEMY_DATABASE_URL[len("sqlite:///") :]
-    elif SQLALCHEMY_DATABASE_URL.startswith("sqlite://"):
-        sqlite_path = SQLALCHEMY_DATABASE_URL[len("sqlite://") :]
+    # sqlite URL absolute path should be sqlite:////tmp/app.db
+    normalized_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:////", "/")
+    if normalized_path.startswith("/"):
+        sqlite_path_on_fs = normalized_path
+    elif normalized_path.startswith("sqlite:///"):
+        sqlite_path_on_fs = normalized_path[len("sqlite:///"):]
     else:
-        sqlite_path = SQLALCHEMY_DATABASE_URL
+        sqlite_path_on_fs = normalized_path
 
-    if sqlite_path.strip() == "":
-        sqlite_path = "./app.db"
+    sqlite_path_on_fs = os.path.abspath(sqlite_path_on_fs)
 
-    sqlite_path = os.path.abspath(sqlite_path)
-    target_dir = os.path.dirname(sqlite_path) or "."
-
-    # Prefer /tmp when directory is not writable or the file is not writable
-    if (not os.access(target_dir, os.W_OK)) or (
-        os.path.exists(sqlite_path) and not os.access(sqlite_path, os.W_OK)
-    ):
-        sqlite_path = "/tmp/app.db"
-        SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
-        target_dir = os.path.dirname(sqlite_path)
-
-    os.makedirs(target_dir, exist_ok=True)
-
-    # Ensure file exists and is writable
-    if not os.path.exists(sqlite_path):
+    os.makedirs(os.path.dirname(sqlite_path_on_fs), exist_ok=True)
+    if not os.path.exists(sqlite_path_on_fs):
         try:
-            open(sqlite_path, "a").close()
+            open(sqlite_path_on_fs, "a").close()
         except OSError:
             pass
 
-    if os.path.exists(sqlite_path) and not os.access(sqlite_path, os.W_OK):
-        # Fallback to /tmp if permission issues remain
-        sqlite_path = "/tmp/app.db"
-        SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
-        os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
-        try:
-            open(sqlite_path, "a").close()
-        except OSError:
-            pass
+    # Redefine absolute URL with four slashes
+    SQLALCHEMY_DATABASE_URL = f"sqlite:////{sqlite_path_on_fs.lstrip('/')}"
 
-# Create database engine
-# SQLite requires check_same_thread=False when using threads
+# 4) Engine creation
 connect_args = {}
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args=connect_args,
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+
+# Create session factory
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for all models
+Base = declarative_base()
+
+# Function to get database session (for dependency injection)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def verify_schema():
