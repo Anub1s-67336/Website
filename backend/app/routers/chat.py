@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing import Literal
 from sqlalchemy.orm import Session
 
-import google.genai as genai
+import google.generativeai as genai
 
 from ..database import get_db
 from ..auth import verify_token
