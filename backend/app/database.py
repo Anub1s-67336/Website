@@ -21,19 +21,34 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     else:
         sqlite_path = SQLALCHEMY_DATABASE_URL
 
-    if sqlite_path == "":
+    if sqlite_path.strip() == "":
         sqlite_path = "./app.db"
 
     sqlite_path = os.path.abspath(sqlite_path)
-
     target_dir = os.path.dirname(sqlite_path) or "."
-    if not os.access(target_dir, os.W_OK):
+
+    # Prefer /tmp when directory is not writable or the file is not writable
+    if (not os.access(target_dir, os.W_OK)) or (
+        os.path.exists(sqlite_path) and not os.access(sqlite_path, os.W_OK)
+    ):
         sqlite_path = "/tmp/app.db"
         SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
         target_dir = os.path.dirname(sqlite_path)
 
     os.makedirs(target_dir, exist_ok=True)
+
+    # Ensure file exists and is writable
     if not os.path.exists(sqlite_path):
+        try:
+            open(sqlite_path, "a").close()
+        except OSError:
+            pass
+
+    if os.path.exists(sqlite_path) and not os.access(sqlite_path, os.W_OK):
+        # Fallback to /tmp if permission issues remain
+        sqlite_path = "/tmp/app.db"
+        SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
+        os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
         try:
             open(sqlite_path, "a").close()
         except OSError:
