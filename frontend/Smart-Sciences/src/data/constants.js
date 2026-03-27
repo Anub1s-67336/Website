@@ -141,11 +141,14 @@ export const NAV = [
   { id: 'body',       icon: '🫀' },
   { id: 'lab',        icon: '🧪' },
   { id: 'table',      icon: '⚛️' },
+  { id: 'reactor',    icon: '⚗️' },
+  { id: 'molecule',   icon: '🧬' },
+  { id: 'microscope', icon: '🔭' },
   { id: 'electron',   icon: '⚡' },
   { id: 'medals',     icon: '🏆' },
   { id: 'roadmap',    icon: '🗺' },
-  { id: 'chembasics', icon: '⚗️' },
-  { id: 'physics',    icon: '🔭' },  // Модуль 2: Физика
+  { id: 'chembasics', icon: '📗' },
+  { id: 'physics',    icon: '🚀' },  // Модуль 2: Физика
 ]
 
 // ── Achievement catalogue (mirrors backend ACHIEVEMENTS_CATALOG) ─

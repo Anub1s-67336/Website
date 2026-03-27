@@ -31,11 +31,14 @@ import { ElectronGame }   from '../screens/ElectronGame.jsx'
 import { LessonScreen }   from '../screens/LessonScreen.jsx'
 import { IntroLesson }    from '../screens/IntroLesson.jsx'
 import { ChemBasicsLesson } from '../screens/ChemBasicsLesson.jsx'
-import { PeriodicTable }  from '../screens/PeriodicTable.jsx'
+import { PeriodicTable }     from '../screens/PeriodicTable.jsx'
+import { AlchemicalReactor } from '../screens/AlchemicalReactor.jsx'
+import { MoleculeBuilder }   from '../screens/MoleculeBuilder.jsx'
+import { ChemMicroscope }    from '../screens/ChemMicroscope.jsx'
 
 export function ChemistryApp() {
   const navigate = useNavigate()
-  const { user, lang, loading, tutorialSeen, setTutorialSeen, xp } = useAuth()
+  const { user, lang, loading, tutorialSeen, setTutorialSeen, xp, addXP } = useAuth()
 
   const [screen,        setScreen]        = useState('home')
   const [currentLesson, setCurrentLesson] = useState(0)
@@ -69,6 +72,9 @@ export function ChemistryApp() {
       lesson:     'home',
       chembasics: 'chembasics',
       table:      'table',
+      reactor:    'reactor',
+      molecule:   'molecule',
+      microscope: 'microscope',
     }
     setProfMsg(t.prof[map[screen] ?? 'home'])
   }, [screen, lang])
@@ -188,6 +194,9 @@ export function ChemistryApp() {
                 setLesson={setCurrentLesson}
               />
             )}
+            {screen === 'reactor'   && <AlchemicalReactor {...screenProps} />}
+            {screen === 'molecule'  && <MoleculeBuilder   {...screenProps} />}
+            {screen === 'microscope'&& <ChemMicroscope    {...screenProps} />}
           </main>
         </div>
 
@@ -202,6 +211,8 @@ export function ChemistryApp() {
         msg={profMsg || t.prof.home}
         happy={profHappy}
         onChatOpen={() => setShowChat(v => !v)}
+        xp={xp}
+        lang={lang}
       />
 
       {showChat && user && (

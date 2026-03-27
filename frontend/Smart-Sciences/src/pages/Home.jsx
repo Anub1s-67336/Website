@@ -51,6 +51,27 @@ const MODULES = [
     accentAlt:   '#fb923c',
     route:       '/physics',
   },
+  {
+    id: 'biology',
+    title: 'Биология',
+    emoji: '🧬',
+    number: 'МОДУЛЬ 3',
+    tagline: 'Клетки, ДНК, жизнь',
+    topics: [
+      { icon: '🔬', text: 'Сканер тела и органы человека' },
+      { icon: '🧬', text: 'Двойная спираль ДНК' },
+      { icon: '🛡', text: 'Иммунный защитник — поглощай вирусы' },
+      { icon: '🌿', text: 'Фотосинтез и рост растений' },
+    ],
+    gradient:    'linear-gradient(135deg, #064e3b, #1e3a8a)',
+    btnGradient: 'linear-gradient(90deg, #22c55e, #c084fc)',
+    glowColor:   'rgba(34,197,94,0.45)',
+    borderColor: 'rgba(74,222,128,0.3)',
+    bgColor:     'rgba(34,197,94,0.05)',
+    accent:      '#4ade80',
+    accentAlt:   '#c084fc',
+    route:       '/biology',
+  },
 ]
 
 export function Home() {

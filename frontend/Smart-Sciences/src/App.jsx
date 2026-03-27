@@ -4,6 +4,7 @@
  *   /           → Home (module selector)
  *   /chemistry  → ChemistryApp (Module 1)
  *   /physics    → PhysicsPage  (Module 2)
+ *   /biology    → BiologyPage  (Module 3)
  */
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
@@ -13,6 +14,7 @@ import { Stars } from './components/Stars.jsx'
 import { Home }         from './pages/Home.jsx'
 import { ChemistryApp } from './pages/ChemistryApp.jsx'
 import { PhysicsPage }  from './pages/PhysicsPage.jsx'
+import { BiologyPage }  from './pages/BiologyPage.jsx'
 
 // Auth screens
 import { LoginScreen }    from './screens/LoginScreen.jsx'
@@ -59,6 +61,8 @@ function AuthGate() {
       <Route path="/chemistry/*" element={<ChemistryApp />} />
       <Route path="/physics"    element={<PhysicsPage />} />
       <Route path="/physics/*"  element={<PhysicsPage />} />
+      <Route path="/biology"    element={<BiologyPage />} />
+      <Route path="/biology/*"  element={<BiologyPage />} />
       <Route path="*"           element={<Navigate to="/" replace />} />
     </Routes>
   )

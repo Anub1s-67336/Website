@@ -10,9 +10,210 @@
  */
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth }   from '../context/AuthContext.jsx'
 import { snd }       from '../utils/sound.js'
 import { ELEMENTS, CATEGORY_COLORS, REAL_LIFE_TAGS } from '../data/elements.js'
+
+/* ── Muruntau / Gold infographic ───────────────────────────────── */
+function AuCard({ lang, setMsg, setHappy }) {
+  const [open, setOpen] = useState(false)
+
+  const handleOpen = () => {
+    snd('click')
+    setOpen(true)
+    setHappy(true)
+    setMsg(lang === 'UZ'
+      ? '🥇 Muruntoʼ — dunyodagi eng katta ochiq kon. O\'zbekiston oltinining sirrini ochaman!'
+      : '🥇 Мурунтау — крупнейший в мире открытый золотой рудник. Расскажу тебе всё о золоте Узбекистана!')
+  }
+
+  return (
+    <>
+      {/* Featured card */}
+      <motion.div
+        whileHover={{ scale: 1.02, y: -3 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleOpen}
+        style={{
+          marginTop: 20, padding: '16px 18px', borderRadius: 18, cursor: 'pointer',
+          background: 'linear-gradient(135deg,rgba(161,121,34,0.22),rgba(234,179,8,0.12))',
+          border: '1.5px solid rgba(234,179,8,0.45)',
+          boxShadow: '0 4px 24px rgba(234,179,8,0.14)',
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}
+      >
+        {/* Au symbol */}
+        <div style={{
+          width: 60, height: 60, borderRadius: 14, flexShrink: 0,
+          background: 'linear-gradient(135deg,#f59e0b,#d97706)',
+          display: 'grid', placeItems: 'center',
+          boxShadow: '0 0 18px rgba(245,158,11,0.4)',
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 26, color: '#fff', lineHeight: 1 }}>Au</div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: -2 }}>79</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 900, fontSize: 15, color: '#fde68a', marginBottom: 2 }}>
+            {lang === 'UZ' ? '🥇 Oltin — Murunto\' siri' : '🥇 Золото — Тайна Мурунтау'}
+          </div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
+            {lang === 'UZ'
+              ? 'O\'zbekiston — dunyo oltinining 4% ini qazib oladi. Nima uchun Au? Bosing!'
+              : 'Узбекистан добывает ~4% мирового золота. Почему Au? Нажми!'}
+          </div>
+        </div>
+        <div style={{ fontSize: 20, color: '#fbbf24' }}>→</div>
+      </motion.div>
+
+      {/* Muruntau infographic modal */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000,
+              background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(6px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            }}
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.88, y: 24 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.88, y: 24 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                maxWidth: 400, width: '100%', borderRadius: 24,
+                background: 'linear-gradient(145deg,#0f1730,#1a1200)',
+                border: '2px solid rgba(234,179,8,0.40)',
+                padding: '24px 20px', maxHeight: '90vh', overflowY: 'auto',
+                boxShadow: '0 0 60px rgba(234,179,8,0.18)',
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: 12,
+                  background: 'linear-gradient(135deg,#f59e0b,#d97706)',
+                  display: 'grid', placeItems: 'center', flexShrink: 0,
+                  boxShadow: '0 0 20px rgba(245,158,11,0.50)',
+                }}>
+                  <span style={{ fontSize: 26, fontWeight: 900, color: '#fff' }}>Au</span>
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#fde68a' }}>
+                    {lang === 'UZ' ? 'Oltin · Aurum' : 'Золото · Aurum'}
+                  </h2>
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+                    Z=79 · M=197 · {lang === 'UZ' ? 'O\'tish metali' : 'Переходный металл'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Properties */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16,
+              }}>
+                {[
+                  { icon: '🌡', lbl: lang==='UZ'?'Eritish nuqtasi':'Т° плавления', val: '1064 °C' },
+                  { icon: '⚡', lbl: lang==='UZ'?'Elektr o\'tkazuvchanlik':'Электропроводность', val: '4.1×10⁷ S/m' },
+                  { icon: '💎', lbl: lang==='UZ'?'Zichlik':'Плотность', val: '19.3 г/см³' },
+                  { icon: '🔮', lbl: lang==='UZ'?'Elektronlar':'Электроны', val: '2-8-18-32-18-1' },
+                ].map(item => (
+                  <div key={item.lbl} style={{
+                    padding: '8px 10px', borderRadius: 10,
+                    background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.20)',
+                  }}>
+                    <div style={{ fontSize: 16, marginBottom: 2 }}>{item.icon}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.40)' }}>{item.lbl}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#fcd34d' }}>{item.val}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Muruntau section */}
+              <div style={{
+                borderRadius: 14, padding: '14px 14px', marginBottom: 14,
+                background: 'linear-gradient(135deg,rgba(161,121,34,0.18),rgba(120,53,15,0.12))',
+                border: '1px solid rgba(234,179,8,0.30)',
+              }}>
+                <h3 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 900, color: '#fde68a' }}>
+                  {lang === 'UZ' ? '🏔 Muruntoʼ — Qizilqum cho\'li' : '🏔 Мурунтау — пустыня Кызылкум'}
+                </h3>
+                {/* Simplified "map" */}
+                <div style={{
+                  borderRadius: 10, height: 80, marginBottom: 10, position: 'relative', overflow: 'hidden',
+                  background: 'linear-gradient(135deg,#854d0e44,#92400e22)',
+                  border: '1px solid rgba(245,158,11,0.25)',
+                }}>
+                  {/* Desert texture dots */}
+                  {Array.from({length:18}).map((_,i)=>(
+                    <div key={i} style={{
+                      position:'absolute',
+                      left: `${10+Math.sin(i*1.7)*35+i*5}%`,
+                      top: `${15+Math.cos(i*2.1)*28+i*4}%`,
+                      width: 3+i%3, height: 3+i%3, borderRadius:'50%',
+                      background:'rgba(245,158,11,0.18)',
+                    }}/>
+                  ))}
+                  <div style={{
+                    position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
+                    textAlign:'center',
+                  }}>
+                    <div style={{ fontSize:18 }}>📍</div>
+                    <div style={{ fontSize:9, color:'#fcd34d', fontWeight:700, whiteSpace:'nowrap' }}>
+                      {lang==='UZ'?'Muruntoʼ tog\' massivi':'Рудник Мурунтау'}
+                    </div>
+                    <div style={{ fontSize:8, color:'rgba(255,255,255,0.4)' }}>
+                      Навоийская обл. · 41°32′N 64°35′E
+                    </div>
+                  </div>
+                </div>
+                {/* Stats */}
+                <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
+                  {[
+                    { icon:'🏗', val: lang==='UZ'?'Dunyo\'ning eng katta ochiq konlaridan biri':'Один из крупнейших открытых рудников мира' },
+                    { icon:'⛏', val: lang==='UZ'?'Yillik: ~80 tonna oltin':'Добыча: ~80 т золота в год' },
+                    { icon:'🌍', val: lang==='UZ'?'O\'zbekiston — dunyoda top-10 oltin ishlab chiqaruvchi':'Узбекистан — топ-10 производителей золота в мире' },
+                    { icon:'🔬', val: lang==='UZ'?'Chuqurligi: 600 m ga yaqin':'Глубина карьера: ~600 м' },
+                    { icon:'⚗️', val: lang==='UZ'?'Tozalash: sianid tsikl usuli':'Обогащение: цианидное выщелачивание' },
+                  ].map(s=>(
+                    <div key={s.val} style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
+                      <span style={{ fontSize:13, flexShrink:0 }}>{s.icon}</span>
+                      <span style={{ fontSize:11, color:'rgba(255,255,255,0.72)', lineHeight:1.4 }}>{s.val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fun fact */}
+              <div style={{
+                padding:'10px 12px', borderRadius:12,
+                background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)',
+                fontSize:12, color:'rgba(255,255,255,0.70)', lineHeight:1.55, marginBottom:14,
+              }}>
+                💡 {lang==='UZ'
+                  ? 'Oltin simvoli Au — lotin so\'zi «Aurum» dan keladi, ya\'ni «Tong yorug\'i». Kimyoviy jihatdan u juda inert — havo va suvda zanglamaydi!'
+                  : 'Символ Au — от латинского «Aurum» — «Утренняя заря». Золото химически инертно: не ржавеет ни на воздухе, ни в воде!'}
+              </div>
+
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  width:'100%', padding:'10px 0', borderRadius:12, cursor:'pointer',
+                  background:'linear-gradient(135deg,#d97706,#b45309)',
+                  border:'none', color:'#fff', fontWeight:900, fontSize:14, fontFamily:'inherit',
+                }}
+              >
+                {lang==='UZ'?'Yopish':'Закрыть'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
 
 // ── 3D Atom Model (CSS-only) ────────────────────────────────────
 function AtomModel({ shells, color }) {
@@ -377,6 +578,9 @@ export function PeriodicTable({ t, lang, setMsg, setHappy, addPts, setScreen, se
           </span>
         )}
       </div>
+
+      {/* ── Au / Muruntau featured card ── */}
+      <AuCard lang={lang} setMsg={setMsg} setHappy={setHappy} />
 
       {/* Element card modal */}
       {selected && (
