@@ -355,4 +355,10 @@ def mark_achievements_seen(
 
 # ==================== Run Information ====================
 if __name__ == "__main__":
-    print("Run the server with:  cd backend && uvicorn app.main:app --reload")
+    import os
+    import uvicorn
+
+    # Railway sets $PORT; fallback to 8000 for local run.
+    port = int(os.environ.get("PORT", "8000"))
+    print(f"Starting server on 0.0.0.0:{port}")
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
