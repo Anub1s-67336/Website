@@ -14,18 +14,25 @@ SQLALCHEMY_DATABASE_URL = DATABASE_URL
 
 # SQLite fallback to /tmp if running on readonly filesystem (Railway containers)
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    sqlite_path = SQLALCHEMY_DATABASE_URL.replace("sqlite://", "")
-    if sqlite_path.startswith("/"):
-        sqlite_path = sqlite_path
+    if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///"):
+        sqlite_path = SQLALCHEMY_DATABASE_URL[len("sqlite:///") :]
+    elif SQLALCHEMY_DATABASE_URL.startswith("sqlite://"):
+        sqlite_path = SQLALCHEMY_DATABASE_URL[len("sqlite://") :]
     else:
-        sqlite_path = os.path.abspath(sqlite_path)
+        sqlite_path = SQLALCHEMY_DATABASE_URL
+
+    if sqlite_path == "":
+        sqlite_path = "./app.db"
+
+    sqlite_path = os.path.abspath(sqlite_path)
 
     target_dir = os.path.dirname(sqlite_path) or "."
     if not os.access(target_dir, os.W_OK):
         sqlite_path = "/tmp/app.db"
         SQLALCHEMY_DATABASE_URL = f"sqlite:///{sqlite_path}"
+        target_dir = os.path.dirname(sqlite_path)
 
-    os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
+    os.makedirs(target_dir, exist_ok=True)
     if not os.path.exists(sqlite_path):
         try:
             open(sqlite_path, "a").close()
