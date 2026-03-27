@@ -34,6 +34,7 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     if not os.path.exists(sqlite_path_on_fs):
         try:
             open(sqlite_path_on_fs, "a").close()
+            os.chmod(sqlite_path_on_fs, 0o666)  # Ensure writable
         except OSError:
             pass
 
