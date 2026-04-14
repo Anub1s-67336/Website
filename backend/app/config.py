@@ -17,8 +17,8 @@ class Settings:
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
-    # database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+    # database — must be set via environment variable (see database.py for validation)
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     # CORS / frontend
     # comma-separated list of allowed origins
